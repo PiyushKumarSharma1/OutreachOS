@@ -1,0 +1,16 @@
+services:
+  outreachos-api:
+    build: .
+    command: python -m outreachos.api
+    ports:
+      - "8000:8000"
+    environment:
+      OUTREACHOS_DB: /data/outreachos.db
+      PROVIDER_MODE: mock
+      LLM_MODE: mock
+    volumes:
+      - outreachos-data:/data
+    restart: unless-stopped
+
+volumes:
+  outreachos-data:
