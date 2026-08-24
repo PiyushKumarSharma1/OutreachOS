@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Client Portal · OutreachOS{% endblock %}
+{% block pagetitle %}Client Portal{% endblock %}
+{% block content %}
+<div style="max-width:420px; margin:8vh auto 0;">
+  <div class="panel card-elevated reveal">
+    <div class="panel-header"><h2 class="panel-title">Sign in with your API key</h2></div>
+    <div class="panel-body">
+      {% if error %}<div class="flash flash-error" style="margin-bottom:var(--space-4);">{{ error }}</div>{% endif %}
+      <form method="post" action="/portal/login">
+        <div class="form-group" style="margin-bottom:var(--space-4);">
+          <label class="form-label">API Key</label>
+          <input type="password" name="api_key" class="form-input mono" placeholder="oos_..." autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Enter Dashboard</button>
+      </form>
+      <p style="font-size:var(--text-xs); color:var(--text-muted); margin-top:var(--space-4);">
+        Keys are issued by your account manager. Portal access is read-only and scoped to your campaigns.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

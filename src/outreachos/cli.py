@@ -156,6 +156,9 @@ def main(argv=None):
     sp.add_argument("--limit", type=int, default=30)
     sp.set_defaults(func=cmd_demo)
 
+    from .cli_ext import register as register_ext
+    register_ext(sub)
+
     args = p.parse_args(argv)
     return args.func(args)
 

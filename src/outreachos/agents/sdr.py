@@ -27,10 +27,11 @@ DEFAULT_INBOX_POOL = [
 class SDRAgent(BaseAgent):
     name = "sdr"
 
-    def __init__(self, store, llm=None, sender=None, inboxes=None):
+    def __init__(self, store, llm=None, sender=None, inboxes=None, compliance=None):
         super().__init__(store, llm)
         self.sender = sender or build("sender")
         self.inboxes = inboxes or DEFAULT_INBOX_POOL
+        self.compliance = compliance
 
     def ready_inboxes(self) -> list[dict]:
         return [i for i in self.inboxes if i.get("warmup_days", 0) >= SETTINGS.warmup_min_days]
@@ -64,7 +65,10 @@ class SDRAgent(BaseAgent):
                 self.store.log_event(lead.id, lead.campaign_id, "security",
                                      "outbound_blocked", {"secrets": sec["secrets"]})
                 continue
-            batch.append((lead, step1))
+            body = step1["body"]
+            if self.compliance:
+                body = self.compliance.apply_footer(body, lead.email, lead.campaign_id)
+            batch.append((lead, {**step1, "body": body}))
 
         messages = []
         assignment = {}

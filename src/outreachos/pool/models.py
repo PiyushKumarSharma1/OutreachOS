@@ -51,6 +51,7 @@ class Campaign:
     offer: str = ""
     case_studies: list[dict] = field(default_factory=list)
     status: str = "draft"
+    client_id: str = ""
     created_at: str = ""
 
     def __post_init__(self):

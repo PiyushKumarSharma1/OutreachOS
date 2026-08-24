@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Approvals · OutreachOS{% endblock %}
+{% block pagetitle %}Objection Drafts — Approval Queue{% endblock %}
+{% block nav_overview %}active{% endblock %}
+{% block content %}
+<div class="panel reveal">
+  <div class="panel-header"><h2 class="panel-title">Pending Responses ({{ queue|length }})</h2>
+    <span class="hint">ObjectionSubAgent drafts — nothing sends without your approval</span></div>
+  <div class="panel-body" style="padding:0;">
+    {% for item in queue %}
+    <div style="padding:var(--space-5); border-bottom:1px solid var(--border-subtle);">
+      <div style="display:flex; justify-content:space-between; align-items:start; gap:var(--space-4); flex-wrap:wrap;">
+        <div>
+          <a href="/lead/{{ item.lead.id }}" style="font-weight:650; color:var(--text-primary); text-decoration:none;">{{ item.lead.full_name }}</a>
+          <span style="color:var(--text-muted); font-size:var(--text-sm);"> · {{ item.lead.title }} @ {{ item.lead.company }}</span>
+          <span class="badge badge-accent" style="margin-left:var(--space-2);">{{ item.campaign }}</span>
+          <div style="margin-top:var(--space-2); background:var(--bg-warm); border-radius:var(--radius-md); padding:var(--space-3); font-size:var(--text-sm); color:var(--text-secondary);">
+            <span class="badge badge-warning" style="margin-right:var(--space-2);">{{ item.note.objection }}</span>
+            "{{ item.note.draft }}"
+          </div>
+        </div>
+        <form method="post" action="/approvals/action" style="display:flex; gap:var(--space-2); flex-shrink:0;">
+          <input type="hidden" name="lead_id" value="{{ item.lead.id }}">
+          <button name="action" value="approve" class="btn btn-primary btn-sm">✓ Approve & Send</button>
+          <button name="action" value="discard" class="btn btn-secondary btn-sm">✕ Discard</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="icon">✓</div>
+      <div class="empty-state-title">Queue is clear</div>
+      <div class="empty-state-desc">Objection drafts will appear here when prospects raise concerns.</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

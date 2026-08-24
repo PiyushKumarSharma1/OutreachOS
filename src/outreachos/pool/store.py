@@ -45,6 +45,8 @@ class PoolStore:
         self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        from .schema_ext import EXT_SCHEMA
+        self.conn.executescript(EXT_SCHEMA)
         self.conn.commit()
 
     def close(self):

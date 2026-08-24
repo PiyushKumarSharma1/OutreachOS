@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }} · OutreachOS Portal{% endblock %}
+{% block pagetitle %}{{ client.name }} — Campaign Results{% endblock %}
+{% block topbar_right %}
+<a href="/portal/logout" class="btn btn-ghost">Sign out</a>
+{% endblock %}
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card reveal"><div class="kpi-label">Prospects Contacted</div><div class="kpi-value mono" data-count="{{ totals.sent }}">0</div></div>
+  <div class="kpi-card reveal"><div class="kpi-label">Total Leads</div><div class="kpi-value mono" data-count="{{ totals.leads }}">0</div></div>
+  <div class="kpi-card reveal"><div class="kpi-label">Positive Replies</div><div class="kpi-value mono" data-count="{{ totals.positive }}">0</div></div>
+  <div class="kpi-card accent reveal"><div class="kpi-label">Meetings Booked</div><div class="kpi-value mono" data-count="{{ totals.booked }}">0</div></div>
+</div>
+
+<div class="panel reveal" style="margin-bottom:var(--space-6);">
+  <div class="panel-header"><h2 class="panel-title">Campaigns</h2></div>
+  <div class="table-wrap" style="border:none;">
+    <table class="table">
+      <thead><tr><th>Campaign</th><th class="mono">Leads</th><th class="mono">Sent</th><th class="mono">Positive</th><th class="mono">Booked</th><th class="mono">Reply Rate</th><th></th></tr></thead>
+      <tbody>
+        {% for c in campaigns %}
+        <tr>
+          <td style="font-weight:600;">{{ c.name }}</td>
+          <td class="mono">{{ c.stats.total_leads }}</td>
+          <td class="mono">{{ c.stats.sent_est }}</td>
+          <td class="mono">{{ c.stats.positive_replies }}</td>
+          <td class="mono"><b>{{ c.booked }}</b></td>
+          <td class="mono">{{ c.reply_rate_pct }}%</td>
+          <td><a href="/api/export/{{ c.name }}.csv" class="btn btn-sm btn-secondary">Export</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty-state"><div class="icon">◈</div><div class="empty-state-desc">No campaigns yet — your account manager is setting them up.</div></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel reveal">
+  <div class="panel-header"><h2 class="panel-title">Booked Meetings ({{ meetings|length }})</h2></div>
+  <div class="panel-body" style="padding:0;">
+    {% for m in meetings %}
+    <details style="border-bottom:1px solid var(--border-subtle);">
+      <summary style="padding:var(--space-4) var(--space-5); cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+        <span><b>{{ m.prospect }}</b> · {{ m.title }} @ {{ m.company }}</span>
+        <span class="badge badge-accent">{{ m.campaign }}</span>
+      </summary>
+      <div style="padding:0 var(--space-5) var(--space-4); font-size:var(--text-sm); color:var(--text-secondary);">
+        {% if m.brief %}
+        <div style="white-space:pre-wrap;">{{ m.brief.prospect }}
+{% for c in m.brief.context %}· {{ c }}
+{% endfor %}
+{% for a in m.brief.suggested_agenda %}→ {{ a }}
+{% endfor %}</div>
+        {% endif %}
+      </div>
+    </details>
+    {% else %}
+    <div class="empty-state"><div class="icon">🎯</div><div class="empty-state-desc">No booked meetings yet — first replies typically land 3-5 days after launch.</div></div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
