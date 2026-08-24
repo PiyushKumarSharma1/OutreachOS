@@ -2,67 +2,93 @@
 {% block title %}{{ c.name }} · OutreachOS{% endblock %}
 {% block pagetitle %}{{ c.name }}{% endblock %}
 {% block topbar_right %}
-<form method="post" action="/campaign/{{ c.name }}/action" class="ops-row">
+<form method="post" action="/campaign/{{ c.name }}/action" class="btn-group" style="display:flex; gap:var(--space-2);">
   <input type="hidden" name="step" value="cycle"><input type="hidden" name="limit" value="{{ default_limit }}">
-  <button class="btn primary">▶ Run Full Cycle</button>
+  <button type="submit" class="btn btn-primary btn-lg">▶ Run Full Cycle</button>
 </form>
 {% endblock %}
 {% block nav_overview %}active{% endblock %}
 {% block content %}
-<div class="panel reveal offer-panel">
-  <div class="offer-label">Offer</div>
-  <div class="offer-text">{{ c.offer or "—" }}</div>
-  <div class="icp-chips">
-    {% for i in c.industries_list %}<span class="chip">{{ i }}</span>{% endfor %}
-    {% for t in c.titles_list %}<span class="chip alt">{{ t }}</span>{% endfor %}
-    <span class="chip ghost">{{ c.headcount_min }}–{{ c.headcount_max }} HC</span>
+<div class="panel reveal card-elevated" style="margin-bottom:var(--space-6);">
+  <div class="panel-body">
+    <div style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:flex-start; justify-content:space-between;">
+      <div>
+        <div style="font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:var(--space-1);">Offer</div>
+        <div style="font-size:var(--text-lg); color:var(--text-primary); max-width:700px;">{{ c.offer or "—" }}</div>
+      </div>
+      <div class="icp-chips" style="display:flex; flex-wrap:wrap; gap:var(--space-2); margin-top:var(--space-3);">
+        {% for i in c.industries_list %}<span class="badge badge-accent">{{ i }}</span>{% endfor %}
+        {% for t in c.titles_list %}<span class="badge badge-info">{{ t }}</span>{% endfor %}
+        <span class="badge badge-neutral">{{ c.headcount_min }}–{{ c.headcount_max }} HC</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="panel reveal ops-panel">
-  <div class="panel-head"><h2>Agent Ops</h2><span class="hint">each step is idempotent — safe to re-run</span></div>
-  <div class="ops-grid">
-    {% for step in steps %}
-    <form method="post" action="/campaign/{{ c.name }}/action" class="op-card">
-      <input type="hidden" name="step" value="{{ step.id }}">
-      <input type="hidden" name="limit" value="{{ default_limit }}">
-      <button class="btn ghost">{{ step.icon }} {{ step.label }}</button>
-    </form>
-    {% endfor %}
-    <a class="op-card as-link" href="/campaign/{{ c.name }}/leads">
-      <button class="btn ghost">▤ Leads Table</button></a>
-    <a class="op-card as-link" href="/api/export/{{ c.name }}.csv">
-      <button class="btn ghost">⇩ Export CSV</button></a>
+<div class="panel reveal" style="margin-bottom:var(--space-6);">
+  <div class="panel-header"><h2 class="panel-title">Agent Ops</h2><span class="hint">Each step is idempotent — safe to re-run</span></div>
+  <div class="panel-body" style="padding:var(--space-4) var(--space-5);">
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap:var(--space-3);">
+      {% for step in steps %}
+      <form method="post" action="/campaign/{{ c.name }}/action" style="margin:0;">
+        <input type="hidden" name="step" value="{{ step.id }}">
+        <input type="hidden" name="limit" value="{{ default_limit }}">
+        <button type="submit" class="btn btn-secondary" style="width:100%; justify-content:center; padding:var(--space-3);">{{ step.icon }} {{ step.label }}</button>
+      </form>
+      {% endfor %}
+      <a href="/campaign/{{ c.name }}/leads" class="btn btn-secondary" style="width:100%; justify-content:center; padding:var(--space-3);">▤ Leads Table</a>
+      <a href="/api/export/{{ c.name }}.csv" class="btn btn-secondary" style="width:100%; justify-content:center; padding:var(--space-3);">⇩ Export CSV</a>
+    </div>
   </div>
 </div>
 
-<div class="grid-2col">
-  <div class="panel reveal chart-wrap"><canvas id="funnelChart"></canvas></div>
-  <div class="panel reveal chart-wrap"><canvas id="stateChart"></canvas></div>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--space-6); margin-bottom:var(--space-6);">
+  <div class="panel reveal card-elevated">
+    <div class="panel-header"><h2 class="panel-title">Pipeline Funnel</h2></div>
+    <div class="panel-body" style="height:300px;"><canvas id="funnelChart"></canvas></div>
+  </div>
+  <div class="panel reveal card-elevated">
+    <div class="panel-header"><h2 class="panel-title">Outreach States</h2></div>
+    <div class="panel-body" style="height:300px;"><canvas id="stateChart"></canvas></div>
+  </div>
 </div>
 
 <script id="chart-data" type="application/json">{{ chart_data | tojson }}</script>
 <script defer src="/static/campaign_charts.js"></script>
 
-<div class="grid-3col stats-row">
+<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:var(--space-4);">
   <div class="panel reveal">
-    <div class="panel-head"><h2>Email Status</h2></div>
-    <table class="mini-table">
-      {% for k, v in status_rows %}<tr><td>{{ k.replace('_',' ') }}</td><td class="mono">{{ v }}</td></tr>{% endfor %}
-    </table>
+    <div class="panel-header"><h2 class="panel-title">Email Status</h2></div>
+    <div class="panel-body" style="padding:0;">
+      <table class="table" style="font-size:var(--text-sm);">
+        {% for k, v in status_rows %}
+        <tr><td>{{ k.replace('_',' ') }}</td><td class="mono" style="text-align:right;">{{ v }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
   </div>
   <div class="panel reveal">
-    <div class="panel-head"><h2>Outreach State</h2></div>
-    <table class="mini-table">
-      {% for k, v in outreach_rows %}<tr><td><span class="badge b-{{ k }}">{{ k.replace('_',' ') }}</span></td><td class="mono">{{ v }}</td></tr>{% endfor %}
-    </table>
+    <div class="panel-header"><h2 class="panel-title">Outreach State</h2></div>
+    <div class="panel-body" style="padding:0;">
+      <table class="table" style="font-size:var(--text-sm);">
+        {% for k, v in outreach_rows %}
+        <tr><td><span class="badge badge-{{ k.replace('replied_','').replace('positive','success').replace('negative','danger').replace('ooo','warning').replace('autoreply','').replace('sent','info').replace('booked','success').replace('dispatched','info').replace('engaged','success').replace('queued_linkedin','info') }}">{{ k.replace('_',' ') }}</span></td><td class="mono" style="text-align:right;">{{ v }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
   </div>
   <div class="panel reveal">
-    <div class="panel-head"><h2>Funnel</h2></div>
-    <div class="funnel">
-      {% for f in funnel_rows %}
-      <div class="frow"><span class="flabel">{{ f.label }}</span><div class="bar"><i data-w="{{ f.pct }}"></i></div><span class="fval mono">{{ f.value }}</span></div>
-      {% endfor %}
+    <div class="panel-header"><h2 class="panel-title">Funnel</h2></div>
+    <div class="panel-body">
+      <div class="funnel">
+        {% for f in funnel_rows %}
+        <div class="funnel-row">
+          <span class="funnel-label">{{ f.label }}</span>
+          <div class="funnel-bar"><span data-w="{{ f.pct }}"></span></div>
+          <span class="funnel-value mono">{{ f.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>

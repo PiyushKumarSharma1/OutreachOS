@@ -1,74 +1,88 @@
 {% extends "base.html" %}
 {% block title %}{{ lead.first_name }} {{ lead.last_name }} · OutreachOS{% endblock %}
 {% block pagetitle %}
-<a href="/campaign/{{ campaign_name }}/leads" class="crumb">{{ campaign_name }}</a> /
-{{ lead.first_name }} {{ lead.last_name }}
+<a href="/campaign/{{ campaign_name }}/leads" class="crumb" style="color:var(--text-muted); text-decoration:none; font-size:var(--text-sm);">{{ campaign_name }}</a> / {{ lead.first_name }} {{ lead.last_name }}
 {% endblock %}
 {% block nav_overview %}active{% endblock %}
 {% block content %}
-<div class="lead-grid">
-  <div class="panel reveal">
-    <div class="panel-head"><h2>Profile</h2>
-      <span class="badge b-{{ lead.outreach_state }}">{{ lead.outreach_state.replace('_',' ') }}</span></div>
-    <dl class="field-list">
-      <div><dt>Name</dt><dd>{{ lead.full_name or "—" }}</dd></div>
-      <div><dt>Title</dt><dd>{{ lead.title or "—" }}</dd></div>
-      <div><dt>Company</dt><dd>{{ lead.company or "—" }}</dd></div>
-      <div><dt>Domain</dt><dd class="mono">{{ lead.domain or "—" }}</dd></div>
-      <div><dt>Email</dt><dd class="mono">{{ lead.email or "—" }}
-        <span class="badge b-{{ lead.email_status }}" style="margin-left:6px">{{ lead.email_status.replace('_',' ') }}</span></dd></div>
-      <div><dt>Industry</dt><dd>{{ lead.industry or "—" }}</dd></div>
-      <div><dt>Headcount</dt><dd>{{ lead.headcount or "—" }}</dd></div>
-      <div><dt>Location</dt><dd>{{ lead.location or "—" }}</dd></div>
-      <div><dt>Source</dt><dd class="mono">{{ lead.source or "—" }}</dd></div>
-      <div><dt>Signal</dt><dd>{{ lead.trigger_signal or "none" }}</dd></div>
-    </dl>
-    {% if lead.angles %}
-    <div style="margin-top:16px">
-      <div class="panel-head"><h2>Research Angles</h2></div>
-      {% for a in lead.angles %}<div class="tl-detail" style="margin-bottom:8px">{{ a }}</div>{% endfor %}
-    </div>
-    {% endif %}
-    {% if lead.sequence %}
-    <details style="margin-top:14px">
-      <summary>Sequence preview ({{ lead.sequence|length }} emails)</summary>
-      {% for e in lead.sequence %}
-      <div class="seq-block">
-        <div class="seq-subject">Step {{ e.step }} · {{ e.subject }}
-          <span class="hint" style="float:right">spam {{ e.spam_score }}</span></div>
-        <div class="seq-body">{{ e.body }}</div>
-      </div>
-      {% endfor %}
-    </details>
-    {% endif %}
-    {% for n in lead.notes if n.type == 'pre_call_brief' %}
-    <div class="seq-block" style="border-color:rgba(167,139,250,.4)">
-      <div class="seq-subject" style="color:var(--violet)">Pre-Call Brief 🎯</div>
-      <div class="seq-body">{{ n.brief.prospect }}
+<div style="display:grid; grid-template-columns: 380px 1fr; gap:var(--space-6);">
+  <aside>
+    <div class="panel reveal card-elevated">
+      <div class="panel-header"><h2 class="panel-title">Profile</h2><span class="badge badge-{{ 'success' if lead.outreach_state in ['booked','replied_positive'] else 'danger' if lead.outreach_state in ['replied_negative','bounced','stopped'] else 'warning' if lead.outreach_state in ['ooo_autoreply'] else 'info' if lead.outreach_state in ['sent','queued_linkedin'] else 'neutral' }}">{{ lead.outreach_state.replace('_',' ') }}</span></div>
+      <div class="panel-body">
+        <dl style="display:grid; gap:var(--space-3);">
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Name</dt><dd style="font-weight:600;">{{ lead.full_name or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Title</dt><dd>{{ lead.title or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Company</dt><dd style="font-weight:550;">{{ lead.company or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Domain</dt><dd class="mono">{{ lead.domain or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Email</dt><dd class="mono">{{ lead.email or "—" }} <span class="badge badge-{{ 'success' if lead.email_status in ['verified','risky_catchall_confirmed'] else 'warning' if lead.email_status in ['found','risky_catchall'] else 'danger' if lead.email_status == 'invalid' else 'neutral' }}" style="margin-left:var(--space-2);">{{ lead.email_status.replace('_',' ') }}</span></dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Industry</dt><dd>{{ lead.industry or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Headcount</dt><dd>{{ lead.headcount or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Location</dt><dd>{{ lead.location or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Source</dt><dd class="mono">{{ lead.source or "—" }}</dd></div>
+          <div><dt style="font-size:var(--text-xs); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Signal</dt><dd>{{ lead.trigger_signal or "none" }}</dd></div>
+        </dl>
+
+        {% if lead.angles %}
+        <div style="margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border-subtle);">
+          <div style="font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:var(--space-3);">Research Angles</div>
+          {% for a in lead.angles %}<div style="background:var(--bg-warm); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-3); margin-bottom:var(--space-2); font-size:var(--text-sm);">{{ a }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if lead.sequence %}
+        <details style="margin-top:var(--space-4);">
+          <summary style="cursor:pointer; color:var(--accent); font-weight:500; font-size:var(--text-sm);">Sequence preview ({{ lead.sequence|length }} emails)</summary>
+          {% for e in lead.sequence %}
+          <div style="background:var(--surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-4); margin-top:var(--space-3);">
+            <div style="font-weight:650; font-size:var(--text-sm); margin-bottom:var(--space-2); display:flex; justify-content:space-between; align-items:center;">
+              Step {{ e.step }} · {{ e.subject }}
+              <span class="badge badge-neutral" style="font-size:var(--text-xs);">spam {{ e.spam_score }}</span>
+            </div>
+            <div style="font-size:var(--text-sm); color:var(--text-secondary); line-height:var(--leading-relaxed); white-space:pre-wrap;">{{ e.body }}</div>
+          </div>
+          {% endfor %}
+        </details>
+        {% endif %}
+
+        {% for n in lead.notes if n.type == 'pre_call_brief' %}
+        <div style="margin-top:var(--space-4); background:linear-gradient(135deg, var(--accent-light), var(--surface)); border:1px solid rgba(59,91,219,0.2); border-radius:var(--radius-lg); padding:var(--space-4);">
+          <div style="font-weight:650; color:var(--accent); margin-bottom:var(--space-2);">🎯 Pre-Call Brief</div>
+          <div style="font-size:var(--text-sm); color:var(--text-secondary); white-space:pre-wrap;">{{ n.brief.prospect }}
 {% for c in n.brief.context %}· {{ c }}
 {% endfor %}
 {% for a in n.brief.suggested_agenda %}→ {{ a }}
 {% endfor %}</div>
-    </div>
-    {% endfor %}
-  </div>
-
-  <div class="panel reveal">
-    <div class="panel-head"><h2>Agent Timeline</h2><span class="hint">{{ timeline|length }} events</span></div>
-    <div class="timeline">
-      {% for t in timeline %}
-      <div class="tl-item" style="animation-delay: {{ loop.index * 60 }}ms">
-        <div class="tl-head">
-          <span class="agent-tag a-{{ t.agent }}">{{ t.agent }}</span>
-          <b style="font-size:13px">{{ t.action.replace('_',' ') }}</b>
-          <time class="tl-time mono">{{ t.ago }} ago</time>
         </div>
-        {% if t.detail %}<div class="tl-detail">{{ t.detail | tojson(indent=1) }}</div>{% endif %}
+        {% endfor %}
       </div>
-      {% else %}
-      <div class="empty">No events recorded.</div>
-      {% endfor %}
     </div>
-  </div>
+  </aside>
+
+  <section>
+    <div class="panel reveal card-elevated" style="margin-bottom:var(--space-6);">
+      <div class="panel-header"><h2 class="panel-title">Agent Timeline</h2><span class="hint">{{ timeline|length }} events</span></div>
+      <div class="panel-body" style="padding:0;">
+        <div style="position:relative; padding-left:24px;">
+          <div style="position:absolute; left:8px; top:6px; bottom:6px; width:2px; background:linear-gradient(180deg, rgba(59,91,219,0.5), rgba(34,211,238,0.15)); border-radius:2px;"></div>
+          {% for t in timeline %}
+          <div style="position:relative; padding:0 0 var(--space-5) 20px; animation:feedIn var(--dur-slow) var(--ease-out); animation-delay:{{ loop.index * 60 }}ms; animation-fill-mode:both;">
+            <div style="position:absolute; left:-24px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--surface); border:2.5px solid var(--accent);"></div>
+            <div style="display:flex; gap:var(--space-3); align-items:center; margin-bottom:var(--space-1);">
+              <span class="feed-icon {% if t.agent in ['hunter','guardian','profiler','copywriter','sdr','networker','pipeline','security','engine','scheduler'] %}{{ t.agent }}{% endif %}"></span>
+              <b style="font-size:var(--text-sm);">{{ t.action.replace('_',' ') }}</b>
+              <time class="feed-time mono">{{ t.ago }} ago</time>
+            </div>
+            {% if t.detail %}<div style="font-size:var(--text-xs); color:var(--text-muted); font-family:var(--font-mono); white-space:pre-wrap; background:rgba(255,255,255,0.025); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-2) var(--space-3); margin-top:var(--space-2);">{{ t.detail | tojson(indent=1) }}</div>{% endif %}
+          </div>
+          {% else %}
+          <div class="empty-state" style="padding:var(--space-8);"><div class="icon">◉</div><div class="empty-state-desc">No events recorded.</div></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
+
+<style>.crumb { color:var(--muted); text-decoration:none; transition:color var(--dur-fast); } .crumb:hover { color:var(--text-primary); }</style>
 {% endblock %}

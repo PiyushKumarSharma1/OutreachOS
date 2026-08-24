@@ -1,46 +1,56 @@
 {% extends "base.html" %}
 {% block title %}{{ c.name }} leads · OutreachOS{% endblock %}
-{% block pagetitle %}<a href="/campaign/{{ c.name }}" class="crumb">{{ c.name }}</a> / Leads{% endblock %}
+{% block pagetitle %}<a href="/campaign/{{ c.name }}" class="crumb" style="color:var(--text-muted); text-decoration:none; font-size:var(--text-sm);">{{ c.name }}</a> / Leads{% endblock %}
 {% block nav_overview %}active{% endblock %}
 {% block content %}
-<form method="get" class="filters reveal in">
-  <div class="filter-field"><label>Stage</label>
-    <select name="stage"><option value="">all</option>
-      {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
-    </select></div>
-  <div class="filter-field"><label>Email Status</label>
-    <select name="status"><option value="">all</option>
-      {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
-    </select></div>
-  <div class="filter-field"><label>Outreach</label>
-    <select name="outreach"><option value="">all</option>
-      {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
-    </select></div>
-  <div class="filter-field"><label>Search</label>
-    <input type="text" name="q" value="{{ q }}" placeholder="name, company, title…"></div>
-  <button class="btn ghost" style="width:auto">Apply</button>
+<form method="get" class="panel" style="margin-bottom:var(--space-6);">
+  <div class="panel-body" style="padding:var(--space-4) var(--space-5);">
+    <div class="filters" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:end;">
+      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:140px;">
+        <label class="form-label">Stage</label>
+        <select name="stage" class="form-input" data-auto-submit><option value="">all</option>
+          {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
+        <label class="form-label">Email Status</label>
+        <select name="status" class="form-input" data-auto-submit><option value="">all</option>
+          {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
+        </select></div>
+      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
+        <label class="form-label">Outreach</label>
+        <select name="outreach" class="form-input" data-auto-submit><option value="">all</option>
+          {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
+        </select></div>
+      <div class="filter-field" style="flex:1; min-width:200px;">
+        <label class="form-label">Search</label>
+        <input type="text" name="q" value="{{ q }}" placeholder="name, company, title, email…" class="form-input" style="width:100%;"></div>
+      <button type="submit" class="btn btn-secondary" style="height:fit-content;">Apply</button>
+    </div>
+  </div>
 </form>
 
-<div class="panel table-panel reveal in">
-<table class="leads-table">
-  <thead><tr><th>Lead</th><th>Email</th><th>Status</th><th>Stage</th><th>Outreach</th><th>HC</th></tr></thead>
-  <tbody>
-    {% for l in leads %}
-    <tr onclick="window.location='/lead/{{ l.id }}'">
-      <td><a href="/lead/{{ l.id }}">
-        <div class="td-name">{{ l.full_name or "—" }}</div>
-        <div class="td-sub">{{ l.title }} · {{ l.company }}</div>
-      </a></td>
-      <td class="mono" style="font-size:12px">{{ l.email or "—" }}</td>
-      <td><span class="badge b-{{ l.email_status }}">{{ l.email_status.replace('_',' ') }}</span></td>
-      <td><span class="badge b-{{ l.stage }}">{{ l.stage }}</span></td>
-      <td><span class="badge b-{{ l.outreach_state }}">{{ l.outreach_state.replace('_',' ') }}</span></td>
-      <td class="mono">{{ l.headcount or "—" }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="6"><div class="empty">No leads match these filters.</div></td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="panel table-wrap reveal">
+  <table class="table">
+    <thead><tr><th>Lead</th><th>Email</th><th>Status</th><th>Stage</th><th>Outreach</th><th class="mono">HC</th></tr></thead>
+    <tbody>
+      {% for l in leads %}
+      <tr style="cursor:pointer;" onclick="window.location='/lead/{{ l.id }}'">
+        <td>
+          <a href="/lead/{{ l.id }}" style="color:inherit; text-decoration:none;">
+            <div style="font-weight:600;">{{ l.full_name or "—" }}</div>
+            <div style="font-size:var(--text-xs); color:var(--text-muted);">{{ l.title }} · {{ l.company }}</div>
+          </a>
+        </td>
+        <td class="mono" style="font-size:var(--text-xs);">{{ l.email or "—" }}</td>
+        <td><span class="badge badge-{{ 'success' if l.email_status in ['verified','risky_catchall_confirmed'] else 'warning' if l.email_status in ['found','risky_catchall'] else 'danger' if l.email_status == 'invalid' else 'neutral' }}">{{ l.email_status.replace('_',' ') }}</span></td>
+        <td><span class="badge badge-neutral">{{ l.stage }}</span></td>
+        <td><span class="badge badge-{{ 'success' if l.outreach_state in ['booked','replied_positive'] else 'danger' if l.outreach_state in ['replied_negative','bounced','stopped'] else 'warning' if l.outreach_state in ['ooo_autoreply'] else 'info' if l.outreach_state in ['sent','queued_linkedin'] else 'neutral' }}">{{ l.outreach_state.replace('_',' ') }}</span></td>
+        <td class="mono">{{ l.headcount or "—" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6"><div class="empty-state" style="padding:var(--space-8); margin:0;"><div class="icon">▤</div><div class="empty-state-title">No leads match</div><div class="empty-state-desc">Try adjusting your filters or search.</div></div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

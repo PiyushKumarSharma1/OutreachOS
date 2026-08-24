@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Live Activity · OutreachOS{% endblock %}
-{% block pagetitle %}Live Activity<span class="pulse-dot"></span>{% endblock %}
+{% block pagetitle %}Live Activity{% endblock %}
 {% block nav_activity %}active{% endblock %}
 {% block content %}
-<div class="panel reveal">
-  <div class="panel-head"><h2>Agent Event Stream</h2><span class="hint">auto-refreshing every 6s</span></div>
-  <div id="feed" data-live="1" class="feed">{% include "_feed_items.html" %}</div>
+<div class="panel reveal card-elevated">
+  <div class="panel-header"><h2 class="panel-title">Agent Event Stream</h2><span class="hint">Auto-refreshing every 6s <span class="pulse-dot" aria-hidden="true"></span></span></div>
+  <div class="panel-body" style="padding:0; max-height:70vh; overflow-y:auto;">
+    <div id="feed" data-live="1" class="feed">{% include "_feed_items.html" %}</div>
+  </div>
 </div>
 {% endblock %}

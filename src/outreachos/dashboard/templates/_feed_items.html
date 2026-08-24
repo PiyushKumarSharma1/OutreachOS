@@ -1,10 +1,13 @@
 {% for e in events %}
 <div class="feed-item" data-eid="{{ e.id }}">
-  <span class="agent-tag a-{{ e.agent }}">{{ e.agent }}</span>
-  <span class="feed-action">{{ e.action.replace('_',' ') }}</span>
-  <span class="feed-target">{{ e.target }}</span>
-  <time class="feed-time mono">{{ e.ago }}</time>
+  <div class="feed-icon {% if e.agent in ['hunter','guardian','profiler','copywriter','sdr','networker','pipeline','security','engine','scheduler'] %}{{ e.agent }}{% endif %}"></div>
+  <div class="feed-content">
+    <span class="feed-agent">{{ e.agent }}</span>
+    <div class="feed-action">{{ e.action.replace('_',' ') }}</div>
+    <span class="feed-target">{{ e.target }}</span>
+    <time class="feed-time mono">{{ e.ago }}</time>
+  </div>
 </div>
 {% else %}
-<div class="empty small">No agent activity yet.</div>
+<div class="empty-state" style="padding:var(--space-6);"><div class="icon">◉</div><div class="empty-state-desc">No agent activity yet.</div></div>
 {% endfor %}

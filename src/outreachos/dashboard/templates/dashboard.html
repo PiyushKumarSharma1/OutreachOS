@@ -3,37 +3,52 @@
 {% block pagetitle %}Mission Control{% endblock %}
 {% block nav_overview %}active{% endblock %}
 {% block content %}
-<div class="kpis">
-  <div class="kpi reveal"><div class="kpi-label">Total Leads</div><div class="kpi-value" data-count="{{ kpis.total_leads }}">0</div><div class="kpi-foot">across {{ campaigns|length }} campaigns</div></div>
-  <div class="kpi reveal"><div class="kpi-label">Verified Rate</div><div class="kpi-value" data-count="{{ kpis.verified_rate }}" data-decimal="1" data-suffix="%">0</div><div class="kpi-foot">waterfall-verified emails</div></div>
-  <div class="kpi reveal"><div class="kpi-label">Emails Sent</div><div class="kpi-value" data-count="{{ kpis.sent }}">0</div><div class="kpi-foot">within deliverability caps</div></div>
-  <div class="kpi accent reveal"><div class="kpi-label">Meetings Booked</div><div class="kpi-value" data-count="{{ kpis.booked }}">0</div><div class="kpi-foot">{{ kpis.reply_rate }}% reply rate</div></div>
+<div class="kpi-grid">
+  <div class="kpi-card reveal"><div class="kpi-label">Total Leads</div><div class="kpi-value mono" data-count="{{ kpis.total_leads }}">0</div><div class="kpi-foot">across {{ campaigns|length }} campaigns</div></div>
+  <div class="kpi-card reveal"><div class="kpi-label">Verified Rate</div><div class="kpi-value mono" data-count="{{ kpis.verified_rate }}" data-decimal="1" data-suffix="%">0</div><div class="kpi-foot">waterfall-verified emails</div></div>
+  <div class="kpi-card reveal"><div class="kpi-label">Emails Sent</div><div class="kpi-value mono" data-count="{{ kpis.sent }}">0</div><div class="kpi-foot">within deliverability caps</div></div>
+  <div class="kpi-card accent reveal"><div class="kpi-label">Meetings Booked</div><div class="kpi-value mono" data-count="{{ kpis.booked }}">0</div><div class="kpi-foot">{{ kpis.reply_rate }}% reply rate</div></div>
 </div>
 
-<div class="grid-2col">
+<div style="display:grid; grid-template-columns: 1fr 380px; gap:var(--space-6);">
   <div class="panel reveal">
-    <div class="panel-head"><h2>Campaigns</h2></div>
-    {% for c in campaigns %}
-    <a class="camp-row" href="/campaign/{{ c.name }}">
-      <div class="camp-info">
-        <div class="camp-name">{{ c.name }}</div>
-        <div class="camp-meta mono">{{ c.id[:12] }} · {{ c.industries }}</div>
+    <div class="panel-header"><h2 class="panel-title">Campaigns</h2></div>
+    <div class="panel-body" style="padding:0;">
+      {% for c in campaigns %}
+      <a href="/campaign/{{ c.name }}" class="campaign-card" style="display:block; padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle); text-decoration:none; color:inherit; transition:background var(--dur-fast);">
+        {% if loop.last %} style="border-bottom:none;" {% endif %}
+        <div style="display:grid; grid-template-columns: 1fr auto auto; gap:var(--space-4); align-items:center;">
+          <div>
+            <div class="campaign-name" style="font-weight:600; font-size:var(--text-base);">{{ c.name }}</div>
+            <div style="font-size:var(--text-xs); color:var(--text-muted); font-family:var(--font-mono);">{{ c.id[:12] }} · {{ c.industries }}</div>
+          </div>
+          <div style="display:flex; gap:var(--space-4); color:var(--text-muted); font-size:var(--text-sm);">
+            <span><b>{{ c.stats.total_leads }}</b> leads</span>
+            <span><b>{{ c.booked }}</b> booked</span>
+            <span><b>{{ c.reply_rate_pct }}</b>% replies</span>
+          </div>
+          <div style="width:100px; height:6px; background:var(--border-subtle); border-radius:var(--radius-pill); overflow:hidden;">
+            <i style="display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),#5a7cff); border-radius:var(--radius-pill); width:var(--w,{{ c.dispatch_pct }}%); transition:width 1s cubic-bezier(0.22,1,0.36,1) .3s;"></i>
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <div class="empty-state" style="padding:var(--space-10);">
+        <div class="icon">◈</div>
+        <div class="empty-state-title">No campaigns yet</div>
+        <div class="empty-state-desc">Create your first campaign via CLI or the API to get started.</div>
       </div>
-      <div class="camp-stats">
-        <span><b>{{ c.stats.total_leads }}</b> leads</span>
-        <span><b>{{ c.booked }}</b> booked</span>
-        <span><b>{{ c.reply_rate_pct }}</b>% replies</span>
-      </div>
-      <div class="camp-bar"><i style="--w: {{ c.dispatch_pct }}%"></i></div>
-    </a>
-    {% else %}
-    <div class="empty">No campaigns yet — create one via CLI or the API.</div>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
 
-  <div class="panel reveal" data-live>
-    <div class="panel-head"><h2>Agent Activity</h2><a class="mini-link" href="/activity">view all →</a></div>
-    <div id="feed" data-live="1" class="feed">{% include "_feed_items.html" %}</div>
-  </div>
+  <aside>
+    <div class="panel reveal" data-live>
+      <div class="panel-header"><h2 class="panel-title">Agent Activity</h2><a href="/activity" class="mini-link">view all →</a></div>
+      <div class="panel-body" style="padding:0; max-height:520px; overflow-y:auto;">
+        <div id="feed" data-live="1" class="feed">{% include "_feed_items.html" %}</div>
+      </div>
+    </div>
+  </aside>
 </div>
 {% endblock %}

@@ -1,22 +1,34 @@
 # Loki Continuity — OutreachOS
 
 ## Session Summary (2026-08-23)
-Built OutreachOS v0.1 end-to-end in one autonomous run.
+v0.1 (core system) + v0.2 (cockpit, security, autonomy) shipped in one autonomous run.
 
 ## Completed
-- [x] Market research: AI SDR landscape 2026 (11x $36-65K/yr w/ 75% churn reports; AiSDR $900/mo+0.75/msg; Artisan $1.5-2K/mo; Regie $21.6K floor). Extracted patterns: waterfall enrichment, catch-all SMTP recovery, warmup gating, 1-sentence AI hooks.
-- [x] Core framework: Common Pool (SQLite blackboard + event log), provider registry with waterfall semantics, LLM abstraction (mock/live).
-- [x] 7 agents: Hunter, Guardian, Profiler, Copywriter, SDR, Networker, Pipeline.
-- [x] Engine pipeline with inter-stage filters; CLI (9 commands); FastAPI service; Docker.
-- [x] 20 tests green; E2E demo verified: 25→22 verified→22 sent→20 LI cadences→6 replies→2 booked.
-- [x] Docs: RESEARCH.md, ARCHITECTURE.md, BUSINESS_PLAYBOOK.md, README.
+- [x] v0.1: 7 agents on Common Pool, waterfall enrichment/verification, CLI, docs
+- [x] Market research codified in docs/RESEARCH.md
+- [x] v0.2: Web ops cockpit (dark SaaS premium per user choice: full ops buttons,
+      local-only deployment), Chart.js funnels, live feed polling, lead timelines
+- [x] Security layer: InjectionGuard (reply scanning → injected positives routed to
+      human review, never auto-booked), outbound secret scanner (blocks sends),
+      ActionGovernor allowlist, CSP/X-Frame headers on server
+- [x] AutonomousScheduler with lockfile; DirectoryScraperProvider (robots-aware,
+      rate-limited) + Playwright adapter slot
+- [x] CSV exports; docker-compose updated for cockpit
+- [x] 35 tests green; all routes curl-verified incl. POST actions
 
 ## Mistakes & Learnings
-- Provider REGISTRY was empty because mock/live modules weren't imported → fixed via lazy `_ensure_registered()`.
-- Campaign round-trip lost ICP type (dict vs dataclass) → use `Campaign.from_dict` everywhere.
-- Dispatch ordering bug: SDR advanced stage before Networker snapshot its pool → snapshot pools before mutation.
+- Referenced scheduler's _active_campaigns from Engine → duplicated as public
+  Engine.active_campaigns(); keep helpers on the owning class.
+- Left a dead `if False else None` line during an edit pass — caught on reread;
+  always re-read edited hunks.
+- Inline <style> blocks fight CSP discipline → moved into app.css.
+
+## User Preferences (confirmed via questions)
+- UI: dark SaaS premium glassmorphism, indigo→cyan gradients
+- Dashboard = full ops cockpit (actions from browser), not read-only
+- Runs local machine only; no cloud hosting needed
 
 ## Next Up (pending)
-- [ ] Live-mode smoke test with real keys
-- [ ] LinkedIn Playwright executor (satellite accounts only)
+- [ ] Live-mode smoke test with real keys (Apollo/ZeroBounce/Smartlead)
+- [ ] LinkedIn Playwright executor behind satellite accounts
 - [ ] Own-campaign launch per BUSINESS_PLAYBOOK 90-day plan
