@@ -31,18 +31,22 @@
   function initLoading() {
     const loader = $('#app-loading');
     if (!loader) return;
-    // Hide after min display time + when DOM ready
-    const minTime = 600;
+    const minTime = 500;
+    const maxTime = 2200;
     const start = performance.now();
-    function tryHide() {
-      const elapsed = performance.now() - start;
-      if (elapsed >= minTime && document.readyState === 'complete') {
-        loader.classList.add('hidden');
-      } else {
-        requestAnimationFrame(tryHide);
-      }
+    let hidden = false;
+    function hide() {
+      if (hidden) return;
+      hidden = true;
+      loader.classList.add('hidden');
     }
-    requestAnimationFrame(tryHide);
+    function loop() {
+      if (performance.now() - start >= minTime) { hide(); return; }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    setTimeout(hide, maxTime);
+    window.addEventListener('load', hide);
   }
 
   // ---- Reveal on Scroll (IntersectionObserver) ----

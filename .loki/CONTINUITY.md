@@ -1,34 +1,33 @@
 # Loki Continuity — OutreachOS
 
 ## Session Summary (2026-08-23)
-v0.1 (core) → v0.2 (cockpit/security/autonomy) → v0.3 (complete UI redesign) in one autonomous run.
+v0.1 core → v0.2 cockpit/security → v0.3 UI redesign → v0.4 complete backend. Product is feature-complete for agency operation.
 
-## Completed
-- [x] v0.1: 7 agents on Common Pool, waterfall enrichment/verification, CLI
-- [x] v0.2: Web ops cockpit, security layer, AutonomousScheduler, ethical scraper
-- [x] v0.3: **Complete UI redesign — skeuomorphic minimalistic**
-  - Loading screen with spinner + progressive enhancement
-  - Back-to-top button with scroll detection
-  - Reveal-on-scroll with stagger (IntersectionObserver)
-  - Counter animations (easeOutCubic), funnel bar animations
-  - Live feed polling (6s), page transition overlay
-  - Skeleton loaders, improved form controls, focus management
-  - Refined shadow system (4 elevation levels), pressed states
-  - Mobile sidebar with overlay, keyboard shortcuts (⌘K search)
-- [x] 35 tests green; every route + POST action curl-verified
-- [x] Security headers: CSP, X-Frame-Options, Referrer-Policy
+## Completed (v0.4)
+- [x] Deep research #2: Instantly/Smartlead feature matrix (multi-client workspaces,
+      webhooks, A/B, per-mailbox health, unibox, auto-stop sequences) + MCP 2026
+      best practices (stdio local, intent-grouped tools, strict schemas)
+- [x] Tenancy (clients + hashed API keys, scopes), InfraManager (DNS guards,
+      warmup tracking), DeliverabilityMonitor (auto-pause/quarantine)
+- [x] SignalsEngine (intent scoring -> dispatch priority), ABEngine (z-test,
+      auto-promote), SequenceEngine (conditional cadences, stop-on-reply)
+- [x] ReplyIntelligence + ObjectionSubAgent -> approval queue (user chose
+      human-approval), ResearchSubAgent -> Profiler
+- [x] LearningLoop: win/loss -> insights -> Copywriter bias (self-improving)
+- [x] EventBus webhooks (HMAC + retry), ComplianceManager (unsub links/footers)
+- [x] MCP server (user chose FULL OPS): 8 tools, write-scope gating, subprocess-tested
+- [x] Client portal (user chose BUILD NOW): key login, isolated dashboards
+- [x] API v2 auth middleware (localhost trusted); CLI: client/infra/ab/webhook/suppress
+- [x] 47 tests green; portal + approvals + ops verified via curl
 
-## User Preferences (confirmed)
-- UI: dark/light adaptive, skeuomorphic minimalistic, single accent
-- Dashboard: full ops cockpit (actions from browser)
-- Deploy: local machine only
-
-## Mistakes & Learnings
-- Don't forget column names in SQLite when demo reseeds (outreach_state in events table)
-- Inline styles fight CSP — move to CSS
-- Re-read edited hunks to catch dead code
+## User Decisions (v0.4)
+- MCP: full ops (run cycles/create campaigns from Claude), write-scope gated
+- Client portal: built now (white-label killer feature)
+- Objection replies: human-approval queue, never auto-send
 
 ## Next Up
-- [ ] Live-mode smoke test with real keys
-- [ ] LinkedIn Playwright executor (satellite accounts)
-- [ ] Own acquisition campaign per BUSINESS_PLAYBOOK
+- [ ] Live-key smoke test (Apollo/ZeroBounce/Smartlead/LLM)
+- [ ] LinkedIn Playwright executor behind satellite accounts
+- [ ] Own acquisition campaign launch per BUSINESS_PLAYBOOK
+- [ ] Unibox view (unified reply inbox) — Smartlead parity item
+- [ ] Spintax support in copywriter
