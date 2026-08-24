@@ -18,6 +18,10 @@ class PipelineAgent(BaseAgent):
         briefs = []
         engaged = self.store.leads(campaign_id, outreach_state="replied_positive")
         for lead in engaged:
+            if any(n.get("flag") == "injection_suspected" for n in lead.notes):
+                self.store.log_event(lead.id, lead.campaign_id, "security",
+                                     "held_for_review", {"reason": "injection_suspected"})
+                continue
             brief = self._build_brief(lead)
             lead.notes.append({"agent": self.name, "type": "pre_call_brief", "brief": brief})
             lead.outreach_state = "booked"

@@ -40,9 +40,11 @@ class SDRAgent(BaseAgent):
         if not ready:
             self.stats = {"queued": 0, "reason": "no_warmed_inboxes"}
             return self.stats
+        from ..security.guards import scan_outbound_secrets
         cap = SETTINGS.daily_send_cap_per_inbox
         capacity = len(ready) * cap
         batch = []
+        blocked_secrets = 0
         for lead in leads:
             if len(batch) >= capacity:
                 break
@@ -50,16 +52,25 @@ class SDRAgent(BaseAgent):
                 continue
             if any(n.get("flag") == "needs_review" for n in lead.notes):
                 continue
-            batch.append(lead)
-
-        messages = []
-        assignment = {}
-        for i, lead in enumerate(batch):
-            inbox = ready[i % len(ready)]["inbox"]
-            assignment[lead.id] = inbox
             step1 = next((e for e in lead.sequence if e.get("step") == 1), None)
             if not step1:
                 continue
+            sec = scan_outbound_secrets(step1["subject"] + "\n" + step1["body"])
+            if not sec["safe"]:
+                blocked_secrets += 1
+                lead.notes.append({"agent": "security", "flag": "outbound_blocked",
+                                   "secrets": sec["secrets"]})
+                self.store.upsert_lead(lead)
+                self.store.log_event(lead.id, lead.campaign_id, "security",
+                                     "outbound_blocked", {"secrets": sec["secrets"]})
+                continue
+            batch.append((lead, step1))
+
+        messages = []
+        assignment = {}
+        for i, (lead, step1) in enumerate(batch):
+            inbox = ready[i % len(ready)]["inbox"]
+            assignment[lead.id] = inbox
             messages.append({
                 "to": lead.email,
                 "first_name": lead.first_name,
@@ -71,7 +82,7 @@ class SDRAgent(BaseAgent):
 
         results = self.sender.send_batch("campaign", messages)
         sent_ids = set()
-        for lead in batch:
+        for lead, _ in batch:
             inbox = assignment.get(lead.id, ready[0]["inbox"])
             lead.outreach_state = "sent"
             lead.stage = "dispatched"
@@ -80,12 +91,15 @@ class SDRAgent(BaseAgent):
             self.log(lead, "email_sent", {"inbox": inbox})
             sent_ids.add(lead.email)
 
-        self.stats = {"eligible": len(leads), "sent": len(sent_ids), "capacity": capacity}
+        self.stats = {"eligible": len(leads), "sent": len(sent_ids),
+                      "capacity": capacity, "blocked_secrets": blocked_secrets}
         return self.stats
 
     def process_replies(self, campaign_id: str, simulated: bool | None = None) -> dict:
         from ..pool.models import Lead
+        from ..security.guards import InjectionGuard
         sim = SETTINGS.provider_mode != "live" if simulated is None else simulated
+        guard = InjectionGuard()
         replies = []
         if sim:
             for lead in self.store.leads(campaign_id, outreach_state="sent"):
@@ -96,17 +110,30 @@ class SDRAgent(BaseAgent):
         else:
             raw = self.sender.fetch_replies(campaign_id)
             for r in raw:
-                ctx = {"_task": "classify_reply", "body": r.get("body", "")}
+                safe_body = guard.inspect_reply(r.get("body", ""))["sanitized_body"]
+                ctx = {"_task": "classify_reply", "body": safe_body}
                 cls = self.llm.complete_json("Classify this reply.", ctx)
                 state = r.get("state") or cls.get("state", "needs_human")
-                replies.append({"to_email": r.get("to_email"), "state": state, "body": r.get("body", "")})
+                replies.append({"to_email": r.get("to_email"), "state": state,
+                                "body": r.get("body", "")})
 
-        updated = 0
         by_email = {l.email: l for l in self.store.leads(campaign_id)}
         handoffs = []
+        flagged = 0
         for r in replies:
             lead = by_email.get(r["to_email"])
             if not lead:
+                continue
+            sec = guard.inspect_reply(r.get("body", ""))
+            if r["state"] == "replied_positive" and not sec["safe"]:
+                flagged += 1
+                lead.notes.append({"agent": "security", "flag": "injection_suspected",
+                                   "risk_score": sec["risk_score"], "matches": sec["matches"]})
+                self.store.upsert_lead(lead)
+                self.store.log_event(lead.id, lead.campaign_id, "security",
+                                     "injection_flagged",
+                                     {"risk_score": sec["risk_score"],
+                                      "labels": [m["label"] for m in sec["matches"]]})
                 continue
             lead.outreach_state = r["state"]
             if r["state"] == "replied_positive":
@@ -115,9 +142,9 @@ class SDRAgent(BaseAgent):
             elif r["state"] == "replied_negative":
                 lead.notes.append({"agent": self.name, "action": "suppress"})
             self.store.upsert_lead(lead)
-            self.log(lead, f"reply_{r['state']}", {"snippet": r["body"][:120]})
-            updated += 1
-        self.stats = {"replies_processed": updated, "positive_handoffs": len(handoffs)}
+            self.log(lead, f"reply_{r['state']}", {"snippet": (sec["sanitized_body"] or r["body"])[:120]})
+        self.stats = {"replies_processed": len(replies) - flagged,
+                      "injections_flagged": flagged, "positive_handoffs": len(handoffs)}
         return handoffs or {}
 
     def _simulate_outcome(self, email: str) -> str | None:

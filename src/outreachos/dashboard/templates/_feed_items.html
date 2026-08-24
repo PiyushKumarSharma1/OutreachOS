@@ -1,0 +1,10 @@
+{% for e in events %}
+<div class="feed-item" data-eid="{{ e.id }}">
+  <span class="agent-tag a-{{ e.agent }}">{{ e.agent }}</span>
+  <span class="feed-action">{{ e.action.replace('_',' ') }}</span>
+  <span class="feed-target">{{ e.target }}</span>
+  <time class="feed-time mono">{{ e.ago }}</time>
+</div>
+{% else %}
+<div class="empty small">No agent activity yet.</div>
+{% endfor %}

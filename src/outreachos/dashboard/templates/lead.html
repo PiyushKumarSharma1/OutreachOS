@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.first_name }} {{ lead.last_name }} · OutreachOS{% endblock %}
+{% block pagetitle %}
+<a href="/campaign/{{ campaign_name }}/leads" class="crumb">{{ campaign_name }}</a> /
+{{ lead.first_name }} {{ lead.last_name }}
+{% endblock %}
+{% block nav_overview %}active{% endblock %}
+{% block content %}
+<div class="lead-grid">
+  <div class="panel reveal">
+    <div class="panel-head"><h2>Profile</h2>
+      <span class="badge b-{{ lead.outreach_state }}">{{ lead.outreach_state.replace('_',' ') }}</span></div>
+    <dl class="field-list">
+      <div><dt>Name</dt><dd>{{ lead.full_name or "—" }}</dd></div>
+      <div><dt>Title</dt><dd>{{ lead.title or "—" }}</dd></div>
+      <div><dt>Company</dt><dd>{{ lead.company or "—" }}</dd></div>
+      <div><dt>Domain</dt><dd class="mono">{{ lead.domain or "—" }}</dd></div>
+      <div><dt>Email</dt><dd class="mono">{{ lead.email or "—" }}
+        <span class="badge b-{{ lead.email_status }}" style="margin-left:6px">{{ lead.email_status.replace('_',' ') }}</span></dd></div>
+      <div><dt>Industry</dt><dd>{{ lead.industry or "—" }}</dd></div>
+      <div><dt>Headcount</dt><dd>{{ lead.headcount or "—" }}</dd></div>
+      <div><dt>Location</dt><dd>{{ lead.location or "—" }}</dd></div>
+      <div><dt>Source</dt><dd class="mono">{{ lead.source or "—" }}</dd></div>
+      <div><dt>Signal</dt><dd>{{ lead.trigger_signal or "none" }}</dd></div>
+    </dl>
+    {% if lead.angles %}
+    <div style="margin-top:16px">
+      <div class="panel-head"><h2>Research Angles</h2></div>
+      {% for a in lead.angles %}<div class="tl-detail" style="margin-bottom:8px">{{ a }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% if lead.sequence %}
+    <details style="margin-top:14px">
+      <summary>Sequence preview ({{ lead.sequence|length }} emails)</summary>
+      {% for e in lead.sequence %}
+      <div class="seq-block">
+        <div class="seq-subject">Step {{ e.step }} · {{ e.subject }}
+          <span class="hint" style="float:right">spam {{ e.spam_score }}</span></div>
+        <div class="seq-body">{{ e.body }}</div>
+      </div>
+      {% endfor %}
+    </details>
+    {% endif %}
+    {% for n in lead.notes if n.type == 'pre_call_brief' %}
+    <div class="seq-block" style="border-color:rgba(167,139,250,.4)">
+      <div class="seq-subject" style="color:var(--violet)">Pre-Call Brief 🎯</div>
+      <div class="seq-body">{{ n.brief.prospect }}
+{% for c in n.brief.context %}· {{ c }}
+{% endfor %}
+{% for a in n.brief.suggested_agenda %}→ {{ a }}
+{% endfor %}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="panel reveal">
+    <div class="panel-head"><h2>Agent Timeline</h2><span class="hint">{{ timeline|length }} events</span></div>
+    <div class="timeline">
+      {% for t in timeline %}
+      <div class="tl-item" style="animation-delay: {{ loop.index * 60 }}ms">
+        <div class="tl-head">
+          <span class="agent-tag a-{{ t.agent }}">{{ t.agent }}</span>
+          <b style="font-size:13px">{{ t.action.replace('_',' ') }}</b>
+          <time class="tl-time mono">{{ t.ago }} ago</time>
+        </div>
+        {% if t.detail %}<div class="tl-detail">{{ t.detail | tojson(indent=1) }}</div>{% endif %}
+      </div>
+      {% else %}
+      <div class="empty">No events recorded.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

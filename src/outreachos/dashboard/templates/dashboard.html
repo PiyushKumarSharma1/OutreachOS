@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Overview · OutreachOS{% endblock %}
+{% block pagetitle %}Mission Control{% endblock %}
+{% block nav_overview %}active{% endblock %}
+{% block content %}
+<div class="kpis">
+  <div class="kpi reveal"><div class="kpi-label">Total Leads</div><div class="kpi-value" data-count="{{ kpis.total_leads }}">0</div><div class="kpi-foot">across {{ campaigns|length }} campaigns</div></div>
+  <div class="kpi reveal"><div class="kpi-label">Verified Rate</div><div class="kpi-value" data-count="{{ kpis.verified_rate }}" data-decimal="1" data-suffix="%">0</div><div class="kpi-foot">waterfall-verified emails</div></div>
+  <div class="kpi reveal"><div class="kpi-label">Emails Sent</div><div class="kpi-value" data-count="{{ kpis.sent }}">0</div><div class="kpi-foot">within deliverability caps</div></div>
+  <div class="kpi accent reveal"><div class="kpi-label">Meetings Booked</div><div class="kpi-value" data-count="{{ kpis.booked }}">0</div><div class="kpi-foot">{{ kpis.reply_rate }}% reply rate</div></div>
+</div>
+
+<div class="grid-2col">
+  <div class="panel reveal">
+    <div class="panel-head"><h2>Campaigns</h2></div>
+    {% for c in campaigns %}
+    <a class="camp-row" href="/campaign/{{ c.name }}">
+      <div class="camp-info">
+        <div class="camp-name">{{ c.name }}</div>
+        <div class="camp-meta mono">{{ c.id[:12] }} · {{ c.industries }}</div>
+      </div>
+      <div class="camp-stats">
+        <span><b>{{ c.stats.total_leads }}</b> leads</span>
+        <span><b>{{ c.booked }}</b> booked</span>
+        <span><b>{{ c.reply_rate_pct }}</b>% replies</span>
+      </div>
+      <div class="camp-bar"><i style="--w: {{ c.dispatch_pct }}%"></i></div>
+    </a>
+    {% else %}
+    <div class="empty">No campaigns yet — create one via CLI or the API.</div>
+    {% endfor %}
+  </div>
+
+  <div class="panel reveal" data-live>
+    <div class="panel-head"><h2>Agent Activity</h2><a class="mini-link" href="/activity">view all →</a></div>
+    <div id="feed" data-live="1" class="feed">{% include "_feed_items.html" %}</div>
+  </div>
+</div>
+{% endblock %}

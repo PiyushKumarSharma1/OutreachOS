@@ -96,6 +96,10 @@ class Engine:
         report["stats"] = self.stats(campaign_name)
         return report
 
+    def active_campaigns(self) -> list[Campaign]:
+        rows = self.store.conn.execute("SELECT data FROM campaigns").fetchall()
+        return [Campaign.from_dict(json.loads(r["data"])) for r in rows]
+
     def stats(self, campaign_name: str) -> dict:
         campaign = self.get_campaign(campaign_name)
         return self.store.campaign_stats(campaign.id)

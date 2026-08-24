@@ -1,5 +1,5 @@
 services:
-  outreachos-api:
+  outreachos:
     build: .
     command: python -m outreachos.api
     ports:

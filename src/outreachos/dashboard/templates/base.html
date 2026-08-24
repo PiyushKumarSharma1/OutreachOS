@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}OutreachOS{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand reveal">
+    <div class="brand-mark">◆</div>
+    <div class="brand-name">Outreach<span>OS</span></div>
+    <div class="brand-sub">autonomous outbound</div>
+  </div>
+  <nav class="nav reveal">
+    <a href="/dashboard" class="nav-link {% block nav_overview %}{% endblock %}">◈ Overview</a>
+    <a href="/activity" class="nav-link {% block nav_activity %}{% endblock %}">◉ Live Activity</a>
+  </nav>
+  <div class="sidebar-foot reveal">
+    <div class="mode-chip"><span class="dot {{ 'ok' if provider_live else 'warn' }}"></span>providers · {{ provider_mode }}</div>
+    <div class="mode-chip"><span class="dot {{ 'ok' if llm_live else 'warn' }}"></span>llm · {{ llm_mode }}</div>
+  </div>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <h1 class="page-title">{% block pagetitle %}{% endblock %}</h1>
+    <div class="topbar-right">{% block topbar_right %}{% endblock %}</div>
+  </header>
+  {% if flash %}<div class="flash reveal in">{{ flash }}</div>{% endif %}
+  <section class="content">
+    {% block content %}{% endblock %}
+  </section>
+</main>
+</body>
+</html>

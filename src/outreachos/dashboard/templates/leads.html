@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ c.name }} leads · OutreachOS{% endblock %}
+{% block pagetitle %}<a href="/campaign/{{ c.name }}" class="crumb">{{ c.name }}</a> / Leads{% endblock %}
+{% block nav_overview %}active{% endblock %}
+{% block content %}
+<form method="get" class="filters reveal in">
+  <div class="filter-field"><label>Stage</label>
+    <select name="stage"><option value="">all</option>
+      {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select></div>
+  <div class="filter-field"><label>Email Status</label>
+    <select name="status"><option value="">all</option>
+      {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
+    </select></div>
+  <div class="filter-field"><label>Outreach</label>
+    <select name="outreach"><option value="">all</option>
+      {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
+    </select></div>
+  <div class="filter-field"><label>Search</label>
+    <input type="text" name="q" value="{{ q }}" placeholder="name, company, title…"></div>
+  <button class="btn ghost" style="width:auto">Apply</button>
+</form>
+
+<div class="panel table-panel reveal in">
+<table class="leads-table">
+  <thead><tr><th>Lead</th><th>Email</th><th>Status</th><th>Stage</th><th>Outreach</th><th>HC</th></tr></thead>
+  <tbody>
+    {% for l in leads %}
+    <tr onclick="window.location='/lead/{{ l.id }}'">
+      <td><a href="/lead/{{ l.id }}">
+        <div class="td-name">{{ l.full_name or "—" }}</div>
+        <div class="td-sub">{{ l.title }} · {{ l.company }}</div>
+      </a></td>
+      <td class="mono" style="font-size:12px">{{ l.email or "—" }}</td>
+      <td><span class="badge b-{{ l.email_status }}">{{ l.email_status.replace('_',' ') }}</span></td>
+      <td><span class="badge b-{{ l.stage }}">{{ l.stage }}</span></td>
+      <td><span class="badge b-{{ l.outreach_state }}">{{ l.outreach_state.replace('_',' ') }}</span></td>
+      <td class="mono">{{ l.headcount or "—" }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6"><div class="empty">No leads match these filters.</div></td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -57,20 +57,40 @@ outreachos lead lead_xxxx                        # full event timeline
 2. Set `PROVIDER_MODE=live` and/or `LLM_MODE=live`
 3. Waterfalls activate automatically: mock providers step aside when credentialed ones exist
 
-## REST API
+## Web Ops Cockpit
 
 ```bash
-pip install fastapi uvicorn
-python -m outreachos.api        # http://localhost:8000/docs
-# POST /campaigns/{name}/run · GET /campaigns/{name}/stats · GET /leads/{id}
+pip install fastapi uvicorn jinja2 python-multipart
+python -m outreachos.api        # → http://localhost:8000/dashboard
 ```
 
-Docker: `docker compose up`
+A dark-glass mission control for the agency:
+
+- **Overview** — animated KPIs (leads, verified rate, meetings booked), campaign cards with funnel progress bars, live agent activity feed
+- **Campaign page** — Chart.js funnel + outreach-state doughnuts, ICP chips, one-click **agent ops buttons** (Hunt / Verify / Profile / Write / Dispatch / Replies / Full Cycle)
+- **Leads table** — filter by stage/status/outreach, full-text search, click into any lead
+- **Lead drill-down** — full profile, research angles, sequence preview with spam scores, pre-call brief, color-coded per-agent timeline of every event ever recorded
+- **Live Activity** — polling event stream across all campaigns
+
+Security headers enforced (CSP, frame-deny). JSON API under `/api/*` (`/health`, `/campaigns/{name}/stats`, `/events/recent`, `export.csv`). Docker: `docker compose up`.
+
+## Autonomy & Security
+
+```bash
+python -c "from outreachos.scheduler import AutonomousScheduler; \
+  AutonomousScheduler().run_cycle(auto_hunt=True)"   # one unattended cycle
+```
+
+- **AutonomousScheduler** — scheduled full cycles with overlap lockfile + jitter; point cron at it or run `run_forever(interval_hours=24)`
+- **Prompt-injection guards** — every prospect reply is scanned for adversarial instructions before touching an LLM; flagged replies can never auto-book meetings (routed to human review)
+- **Outbound secret scanner** — generated copy is checked for credential patterns before dispatch; blocked sends are logged as security events
+- **Action allowlist** — agents may only emit whitelisted event actions
+- **Ethical scraper provider** — robots.txt-honoring directory scraper (1 req/sec, page caps) with optional Playwright renderer for JS-heavy pages (`PLAYWRIGHT_ENABLED=1`)
 
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest tests/ -q     # 20 tests
+.venv/bin/python -m pytest tests/ -q     # 35 tests
 ```
 
 ## Docs

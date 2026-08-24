@@ -1,0 +1,26 @@
+id,first_name,last_name,title,company,domain,email,email_status,outreach_state,stage,industry,headcount,location,source
+lead_bc9c7822e9be,Liam,Davis,Chief Revenue Officer,Vertexflow51,vertexflow51.ai,liam.davis@vertexflow51.ai,verified,sent,dispatched,SaaS,157,US,mock_leadsource
+lead_c566828b3531,Noah,Kim,Demand Gen Manager,Northbeam50,northbeam50.io,noah.kim@northbeam50.io,verified,sent,dispatched,SaaS,822,US,mock_leadsource
+lead_1e87f772e24c,Diego,Garcia,Chief Revenue Officer,Lumenlabs77,lumenlabs77.io,diego.garcia@lumenlabs77.io,verified,replied_negative,dispatched,SaaS,957,US,mock_leadsource
+lead_05d0b2b12af3,Ethan,Tanaka,VP of Sales,Copperleaf73,copperleaf73.io,ethan.tanaka@copperleaf73.io,verified,sent,dispatched,SaaS,906,US,mock_leadsource
+lead_1091dbdef10a,Noah,Martinez,Chief Revenue Officer,Orbitally15,orbitally15.ai,noah.martinez@orbitally15.ai,verified,ooo_autoreply,dispatched,SaaS,558,US,mock_leadsource
+lead_a22c1e1b01e0,Ivan,Singh,Head of Growth,Vertexflow96,vertexflow96.io,ivan.singh@vertexflow96.io,invalid,new,dropped,SaaS,26,US,mock_leadsource
+lead_e62b17d802e2,Nora,Kim,VP of Sales,Stackforge85,stackforge85.io,nora.kim@stackforge85.io,verified,booked,booked,SaaS,243,US,mock_leadsource
+lead_7b13c6afc87a,Liam,Davis,Chief Revenue Officer,Brightpath22,brightpath22.io,liam.davis@brightpath22.io,verified,sent,dispatched,SaaS,838,US,mock_leadsource
+lead_8c1ef5d64fe1,Emma,Martinez,Chief Revenue Officer,Northbeam15,northbeam15.ai,emma.martinez@northbeam15.ai,verified,sent,dispatched,SaaS,55,US,mock_leadsource
+lead_39774166833e,Nora,Patel,Chief Revenue Officer,Vertexflow67,vertexflow67.com,nora.patel@vertexflow67.com,verified,booked,booked,SaaS,912,US,mock_leadsource
+lead_680378d1afef,Zoe,Chen,Chief Revenue Officer,Quantivo7,quantivo7.ai,zoe.chen@quantivo7.ai,verified,sent,dispatched,SaaS,526,US,mock_leadsource
+lead_44dbd21a1e28,Raj,Mueller,Head of Growth,Lumenlabs80,lumenlabs80.ai,raj.mueller@lumenlabs80.ai,verified,sent,dispatched,SaaS,921,US,mock_leadsource
+lead_6d607ae1cff4,Noah,Kowalski,Head of Growth,Quantivo72,quantivo72.com,noah.kowalski@quantivo72.com,verified,sent,dispatched,SaaS,367,US,mock_leadsource
+lead_9b73b78706a4,Noah,Rossi,VP of Sales,Datacrane13,datacrane13.com,,none,new,dropped,SaaS,398,US,mock_leadsource
+lead_ae5b934f28bb,Ethan,Novak,Demand Gen Manager,Northbeam41,northbeam41.ai,ethan.novak@northbeam41.ai,verified,ooo_autoreply,dispatched,SaaS,704,US,mock_leadsource
+lead_b0e4f631875a,Kenji,Chen,Chief Revenue Officer,Heliosync37,heliosync37.com,kenji.chen@heliosync37.com,verified,sent,dispatched,SaaS,640,US,mock_leadsource
+lead_729f8d10eb6c,Zoe,Tanaka,VP of Sales,Vertexflow83,vertexflow83.ai,zoe.tanaka@vertexflow83.ai,verified,sent,dispatched,SaaS,175,US,mock_leadsource
+lead_6600e0832af5,Leila,Ahmed,Chief Revenue Officer,Lumenlabs13,lumenlabs13.io,lahmed@lumenlabs13.io,verified,replied_negative,dispatched,SaaS,895,US,mock_leadsource
+lead_b01e200806d7,Sofia,Kowalski,Head of Growth,Heliosync46,heliosync46.com,sofia.kowalski@heliosync46.com,verified,sent,dispatched,SaaS,638,US,mock_leadsource
+lead_4df901c54b8d,Nora,Kim,Head of Growth,Heliosync34,heliosync34.ai,nora.kim@heliosync34.ai,risky_catchall_confirmed,sent,dispatched,SaaS,254,US,mock_leadsource
+lead_2dd6974131f8,Ethan,Garcia,VP of Sales,Fluxline93,fluxline93.io,ethan.garcia@fluxline93.io,verified,sent,dispatched,SaaS,642,US,mock_leadsource
+lead_548776048a41,Sofia,Kim,Head of Growth,Brightpath89,brightpath89.ai,sofia.kim@brightpath89.ai,verified,sent,dispatched,SaaS,636,US,mock_leadsource
+lead_35576d70ceb2,Ava,Rossi,VP of Sales,Lumenlabs29,lumenlabs29.com,,none,new,dropped,SaaS,366,US,mock_leadsource
+lead_1767c66603f1,Omar,Tanaka,VP of Sales,Quantivo6,quantivo6.com,omar.tanaka@quantivo6.com,verified,sent,dispatched,SaaS,140,US,mock_leadsource
+lead_3c6930841408,Mia,Garcia,Demand Gen Manager,Fluxline74,fluxline74.io,mia.garcia@fluxline74.io,verified,sent,dispatched,SaaS,433,US,mock_leadsource
