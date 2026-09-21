@@ -31,17 +31,20 @@ class ClientReporterAgent(BaseAgent):
                 continue
             stats = self.store.campaign_stats(campaign.id)
             leads = self.store.leads(campaign.id)
+            sent = int(stats.get("sent_est", stats.get("sent", 0)) or 0)
+            by_state = stats.get("by_outreach_state", {})
+            replies = sum(int(by_state.get(k, 0)) for k in
+                           ("replied_positive", "replied_negative", "ooo_autoreply"))
+            positive = int(by_state.get("replied_positive", 0))
             report = {
                 "campaign": campaign.name,
                 "campaign_id": campaign.id,
-                "leads_total": stats.get("total", len(leads)),
-                "sent": stats.get("sent", 0),
-                "replies": stats.get("replied", 0),
-                "positive_replies": stats.get("replied_positive", 0),
-                "meetings_booked": stats.get("booked", 0),
-                "reply_rate": round(
-                    (stats.get("replied", 0) / stats["sent"]) * 100, 2
-                ) if stats.get("sent") else 0.0,
+                "leads_total": stats.get("total_leads", len(leads)),
+                "sent": sent,
+                "replies": replies,
+                "positive_replies": positive,
+                "meetings_booked": int(by_state.get("booked", 0)),
+                "reply_rate": round((replies / sent) * 100, 2) if sent else 0.0,
                 "deliverability": self.monitor.check().get("summary", "no_inbox_data"),
                 "top_signals": [l.trigger_signal for l in leads if l.trigger_signal][:5],
             }
