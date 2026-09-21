@@ -27,6 +27,11 @@ DEMO_CAMPAIGN = {
 }
 
 
+def cmd_find_customers(args):
+    from .selfserve import cmd as _cmd
+    return _cmd(args)
+
+
 def cmd_init(args):
     store = PoolStore(SETTINGS.db_path)
     print(f"Common Pool initialized at {SETTINGS.db_path}")
@@ -115,6 +120,12 @@ def cmd_demo(args):
 def main(argv=None):
     p = argparse.ArgumentParser(prog="outreachos", description="Autonomous AI Outreach OS")
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    sp = sub.add_parser("find-customers")
+    sp.add_argument("--limit", type=int, default=40)
+    sp.add_argument("--out", default="./agency-customers")
+    sp.add_argument("--head", type=int, default=25)
+    sp.set_defaults(func=cmd_find_customers)
 
     sub.add_parser("init").set_defaults(func=cmd_init)
 

@@ -6,3 +6,5 @@ __pycache__/
 .loki/state/*.lock
 
 .codebase-memory/
+
+agency-customers/
