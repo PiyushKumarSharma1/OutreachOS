@@ -14,7 +14,13 @@ PYTHONPATH=src .venv/bin/python -m outreachos.demo --limit 25
 
 ## The Full System (v0.5)
 
-**Agents** — Hunter → Guardian → Profiler → Copywriter → SDR → Networker → Pipeline, plus:
+**Agents (common pool, 14)** — Hunter → Guardian → Profiler → Copywriter → SDR → Networker → Pipeline, plus:
+- **SignalScout** — re-scores pool leads with the SignalsEngine, persists fresh trigger signals, revives leads dropped for timing (signal-triggered outreach = 3–5x reply rates per 2026 research)
+- **MeetingBooker** — proposes 3 concrete local-time slots + booking email for positive replies; auto-requeues out-of-office replies
+- **ICPRefiner** — harvests outcomes per campaign, records keep/drop bucket recommendations on the event ledger
+- **DeliverabilityOps** — audits per-inbox 24h health; pauses >5% bounce, quarantines >8%
+- **ClientReporter** — weekly retainer-grade client report (replies, meetings, deliverability, learnings)
+- Run any of them: `Engine.run_agent(agent_name, campaign_name=None)`; also: ResearchSubAgent (4-query deep research) and ObjectionSubAgent (objection classification) as before, plus:
 - **ResearchSubAgent** — 4-query deep research per lead feeding the Profiler
 - **ObjectionSubAgent** — classifies objections (price/timing/authority/competitor) and drafts responses → human-approval queue
 

@@ -225,3 +225,19 @@ class Engine:
             "timeline": [{"agent": e.agent, "action": e.action, "detail": e.detail,
                           "at": e.created_at} for e in events],
         }
+
+    def run_agent(self, agent_name: str, campaign_name: str | None = None) -> dict:
+        """Dispatch any common-pool agent by name (campaign/system level)."""
+        from ..agents import ALL_AGENTS
+
+        cls = ALL_AGENTS.get(agent_name)
+        if cls is None:
+            raise ValueError(f"UNKNOWN_AGENT: {agent_name}")
+        campaign_id = None
+        if campaign_name:
+            campaign_id = self.get_campaign(campaign_name).id
+        agent = cls(self.store)
+        runner = getattr(agent, "run", None)
+        if runner is None:
+            raise ValueError(f"AGENT_NOT_RUNNABLE: {agent_name}")
+        return runner(campaign_id)
