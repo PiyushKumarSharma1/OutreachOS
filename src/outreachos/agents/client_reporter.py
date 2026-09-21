@@ -33,9 +33,8 @@ class ClientReporterAgent(BaseAgent):
             leads = self.store.leads(campaign.id)
             sent = int(stats.get("sent_est", stats.get("sent", 0)) or 0)
             by_state = stats.get("by_outreach_state", {})
-            replies = sum(int(by_state.get(k, 0)) for k in
-                           ("replied_positive", "replied_negative", "ooo_autoreply"))
-            positive = int(by_state.get("replied_positive", 0))
+            positive = int(stats.get("positive_replies", by_state.get("replied_positive", 0)) or 0)
+            replies = positive + int(by_state.get("stopped", 0) or 0)  # stop-on-reply counts as a reply
             report = {
                 "campaign": campaign.name,
                 "campaign_id": campaign.id,
@@ -44,7 +43,7 @@ class ClientReporterAgent(BaseAgent):
                 "replies": replies,
                 "positive_replies": positive,
                 "meetings_booked": int(by_state.get("booked", 0)),
-                "reply_rate": round((replies / sent) * 100, 2) if sent else 0.0,
+                "reply_rate": round(float(stats.get("reply_rate", 0)) * 100, 2) if stats.get("reply_rate") and stats.get("reply_rate") < 1 else round((replies / sent) * 100, 2) if sent else 0.0,
                 "deliverability": self.monitor.check().get("summary", "no_inbox_data"),
                 "top_signals": [l.trigger_signal for l in leads if l.trigger_signal][:5],
             }
