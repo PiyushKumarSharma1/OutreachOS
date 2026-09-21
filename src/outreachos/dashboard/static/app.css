@@ -154,13 +154,19 @@ body {
 /* ==========================================================================
    Loading Screen
    ========================================================================== */
+@keyframes auto-hide-loader {
+  0%, 99% { opacity: 1; visibility: visible; }
+  100% { opacity: 0; visibility: hidden; pointer-events: none; }
+}
 #app-loading {
   position: fixed; inset: 0; z-index: var(--z-loading);
   display: grid; place-items: center;
   background: var(--surface);
   transition: opacity var(--dur-slow) var(--ease-out), visibility var(--dur-slow);
+  animation: auto-hide-loader 0s 2.5s forwards;
 }
 #app-loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+html.no-js #app-loading { display: none; }
 
 .loading-spinner {
   width: 48px; height: 48px;

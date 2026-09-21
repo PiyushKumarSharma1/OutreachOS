@@ -45,6 +45,8 @@ class ApolloSource(LeadSourceProvider):
                 "api_key": _key("APOLLO_API_KEY"),
                 "person_titles": icp.get("titles", []),
                 "organization_num_employees_ranges": [f"{icp.get('headcount_min', 10)},{icp.get('headcount_max', 5000)}"],
+                "person_locations": icp.get("geos", []),
+                "organization_industry_tags": icp.get("industries", []),
                 "page": 1,
                 "per_page": min(limit, 100),
             },
@@ -87,6 +89,31 @@ class HunterFinder(EmailFinderProvider):
             score = d.get("score", 0)
             if email and score >= 70:
                 return {"email": email, "confidence": round(score / 100, 2)}
+        except Exception:
+            pass
+        return {}
+
+
+@register
+class DropcontactFinder(EmailFinderProvider):
+    name = "dropcontact"
+    kinds = ("emailfinder",)
+
+    def available(self):
+        return bool(_key("DROPCONTACT_API_KEY"))
+
+    def find_email(self, first_name, last_name, domain):
+        try:
+            resp = http_json("https://api.dropcontact.io/v1/enrich", {
+                "key": _key("DROPCONTACT_API_KEY"),
+                "first_name": first_name,
+                "last_name": last_name,
+                "domain": domain,
+            })
+            d = resp.get("data", {})
+            email = d.get("email")
+            if email:
+                return {"email": email, "confidence": 0.85}
         except Exception:
             pass
         return {}
@@ -181,6 +208,149 @@ class SmartleadSender(SenderProvider):
             return []
 
 
-for _cls in [ApolloSource, HunterFinder, ZeroBounceVerifier,
-             NeverBounceVerifier, ScrubbyCatchAll, SmartleadSender]:
+@register
+class InstantlySender(SenderProvider):
+    name = "instantly"
+    kinds = ("sender",)
+
+    def available(self):
+        return bool(_key("INSTANTLY_API_KEY"))
+
+    def send_batch(self, campaign_id, messages):
+        key = _key("INSTANTLY_API_KEY")
+        results = []
+        for m in messages:
+            try:
+                resp = http_json("https://api.instantly.ai/api/v1/campaign/lead/add", {
+                    "api_key": key,
+                    "campaign_id": campaign_id,
+                    "first_name": m.get("first_name", ""),
+                    "last_name": m.get("last_name", ""),
+                    "email": m["to"],
+                    "custom_fields": m.get("vars", {}),
+                })
+                results.append({"message_id": str(resp), "status": "queued", "inbox": m.get("inbox", "")})
+            except Exception as e:
+                results.append({"message_id": "", "status": f"error:{e}", "inbox": m.get("inbox", "")})
+        return results
+
+    def fetch_replies(self, campaign_id):
+        key = _key("INSTANTLY_API_KEY")
+        try:
+            return http_json("https://api.instantly.ai/api/v1/campaign/replies", {
+                "api_key": key, "campaign_id": campaign_id,
+            })
+        except Exception:
+            return []
+
+
+@register
+class ClearbitEnrichment:
+    name = "clearbit"
+    kinds = ("enrichment",)
+
+    def available(self):
+        return bool(_key("CLEARBIT_API_KEY"))
+
+    def enrich_person(self, lead: dict) -> dict:
+        email = lead.get("email", "")
+        if not email:
+            return {}
+        try:
+            resp = http_json(f"https://person.clearbit.com/v2/people/find?email={email}",
+                           headers={"Authorization": f"Bearer {_key('CLEARBIT_API_KEY')}"})
+            return {
+                "clearbit_name": resp.get("name", {}).get("fullName", ""),
+                "clearbit_location": resp.get("location", ""),
+                "clearbit_twitter": resp.get("twitter", {}).get("handle", ""),
+                "clearbit_linkedin": resp.get("linkedin", {}).get("handle", ""),
+                "clearbit_bio": resp.get("bio", ""),
+                "clearbit_avatar": resp.get("avatar", ""),
+            }
+        except Exception:
+            return {}
+
+    def enrich_company(self, domain: str) -> dict:
+        try:
+            resp = http_json(f"https://company.clearbit.com/v2/companies/find?domain={domain}",
+                           headers={"Authorization": f"Bearer {_key('CLEARBIT_API_KEY')}"})
+            return {
+                "clearbit_company_name": resp.get("name", ""),
+                "clearbit_description": resp.get("description", ""),
+                "clearbit_category": resp.get("category", ""),
+                "clearbit_tech": resp.get("tech", []),
+                "clearbit_metrics": resp.get("metrics", {}),
+                "clearbit_employee_count": resp.get("metrics", {}).get("employees", 0),
+            }
+        except Exception:
+            return {}
+
+
+@register
+class PeopleDataLabsEnrichment:
+    name = "pdl"
+    kinds = ("enrichment",)
+
+    def available(self):
+        return bool(_key("PDL_API_KEY"))
+
+    def enrich_person(self, lead: dict) -> dict:
+        email = lead.get("email", "")
+        if not email:
+            return {}
+        try:
+            resp = http_json("https://api.peopledatalabs.com/v5/person/enrich", {
+                "api_key": _key("PDL_API_KEY"),
+                "email": email,
+                "pretty": True,
+            })
+            d = resp.get("data", {})
+            return {
+                "pdl_full_name": d.get("full_name", ""),
+                "pdl_job_title": d.get("job_title", ""),
+                "pdl_company": d.get("job_company_name", ""),
+                "pdl_linkedin": d.get("linkedin_url", ""),
+                "pdl_skills": d.get("skills", []),
+                "pdl_experience": d.get("experience", []),
+            }
+        except Exception:
+            return {}
+
+    def enrich_company(self, domain: str) -> dict:
+        try:
+            resp = http_json("https://api.peopledatalabs.com/v5/company/enrich", {
+                "api_key": _key("PDL_API_KEY"),
+                "website": domain,
+                "pretty": True,
+            })
+            d = resp.get("data", {})
+            return {
+                "pdl_company_name": d.get("name", ""),
+                "pdl_size": d.get("size", ""),
+                "pdl_founded": d.get("founded_year", 0),
+                "pdl_industry": d.get("industry", ""),
+                "pdl_location": d.get("location", ""),
+                "pdl_tech": d.get("technologies", []),
+            }
+        except Exception:
+            return {}
+
+
+@register
+class HubSpotSignalProvider:
+    name = "hubspot_signals"
+    kinds = ("signals",)
+
+    def available(self):
+        return bool(_key("HUBSPOT_API_KEY"))
+
+    def signals(self, domain: str) -> list[str]:
+        # HubSpot doesn't have direct signal API, but we can check for
+        # recent form submissions, page views, etc. via their API
+        return []
+
+
+for _cls in [ApolloSource, HunterFinder, DropcontactFinder, ZeroBounceVerifier,
+             NeverBounceVerifier, ScrubbyCatchAll, SmartleadSender, InstantlySender,
+             ClearbitEnrichment, PeopleDataLabsEnrichment, HubSpotSignalProvider]:
     register(_cls)

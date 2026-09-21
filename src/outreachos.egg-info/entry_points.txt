@@ -1,0 +1,4 @@
+[console_scripts]
+outreachos = outreachos.cli:main
+outreachos-api = outreachos.main:app
+outreachos-mcp = outreachos.mcp_server:main

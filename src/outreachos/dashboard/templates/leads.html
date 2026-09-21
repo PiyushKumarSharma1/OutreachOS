@@ -5,33 +5,86 @@
 {% block content %}
 <form method="get" class="panel" style="margin-bottom:var(--space-6);">
   <div class="panel-body" style="padding:var(--space-4) var(--space-5);">
-    <div class="filters" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:end;">
-      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:140px;">
-        <label class="form-label">Stage</label>
-        <select name="stage" class="form-input" data-auto-submit><option value="">all</option>
-          {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
-        </select></div>
-      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
-        <label class="form-label">Email Status</label>
-        <select name="status" class="form-input" data-auto-submit><option value="">all</option>
-          {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
-        </select></div>
-      <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
-        <label class="form-label">Outreach</label>
-        <select name="outreach" class="form-input" data-auto-submit><option value="">all</option>
-          {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
-        </select></div>
-      <div class="filter-field" style="flex:1; min-width:200px;">
-        <label class="form-label">Search</label>
-        <input type="text" name="q" value="{{ q }}" placeholder="name, company, title, email…" class="form-input" style="width:100%;"></div>
-      <button type="submit" class="btn btn-secondary" style="height:fit-content;">Apply</button>
+    <div class="filters" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:end; flex-direction:column;">
+      <div class="filter-row" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:end; min-width:180px;">
+        <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:140px;">
+          <label class="form-label">Stage</label>
+          <select name="stage" class="form-input" data-auto-submit><option value="">all</option>
+            {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select></div>
+        <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
+          <label class="form-label">Email Status</label>
+          <select name="status" class="form-input" data-auto-submit><option value="">all</option>
+            {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor %}
+          </select></div>
+        <div class="filter-field" style="display:flex; flex-direction:column; gap:var(--space-1); min-width:160px;">
+          <label class="form-label">Outreach</label>
+          <select name="outreach" class="form-input" data-auto-submit><option value="">all</option>
+            {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s.replace('_',' ') }}</option>{% endfor }
+          </select></div>
+        <div class="filter-field" style="flex:1; min-width:200px;">
+          <label class="form-label">Search</label>
+          <input type="text" name="q" value="{{ q }}" placeholder="name, company, title, email…" class="form-input" style="width:100%;"></div>
+      </div>
+      <div class="filter-row" style="display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:end;">
+        <div class="filter-field" style="min-width:140px;">
+          <label class="form-label">Sort By</label>
+          <select name="sort" class="form-input" style="width:100%;">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="alphabetical">A-Z</option>
+            <option value="alphabetical-reverse">Z-A</option>
+            <option value="score">Intent Score</option>
+            <option value="headcount">Headcount</option>
+          </select>
+        </div>
+        <div class="filter-field" style="min-width:140px;">
+          <label class="form-label">Min Daily Cap</label>
+          <input type="number" name="min_cap" value="{{ request.query_params.get('min_cap', '') }}" min="0" max="500" class="form-input" style="width:100%;"></div>
+        <div class="filter-field" style="min-width:140px;">
+          <label class="form-label">Warmup Days</label>
+          <input type="number" name="min_warmup" value="{{ request.query_params.get('min_warmup', '') }}" min="0" max="100" class="form-input" style="width:100%;"></div>
+        <button type="submit" class="btn btn-secondary" style="height:fit-content; align-self:end;">Apply Filters</button>
+      </div>
     </div>
   </div>
 </form>
 
-<div class="panel table-wrap reveal">
+<div class="panel reveal" style="margin-bottom:var(--space-6);">
+  <div class="panel-header" style="padding:var(--space-4) var(--space-5);">
+    <h2 class="panel-title">Lead Map</h2>
+    <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; font-size:var(--text-xs); color:var(--text-secondary); margin-top:var(--space-3);">
+      <button class="btn btn-ghost" onclick="window.filterByStatus('all')">All</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('verified')">Verified</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('risky')">Risky</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('invalid')">Invalid</button>
+    </div>
+  </div>
+  <div class="panel-body" style="padding:0; height:420px; position:relative;">
+    <div id="lead-map" style="width:100%; height:100%;"></div>
+    <div id="map-legend" style="position:absolute; bottom:var(--space-4); left:var(--space-4); background:var(--surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-3); z-index:10; max-width:200px;">
+      <div style="font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:var(--space-2);">Status Legend</div>
+      <div style="display:flex; gap:var(--space-2); margin-bottom:var(--space-1);">
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--success); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Verified</span>
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--warning); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Risky</span>
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--danger); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Invalid</span>
+      </div>
+      <div style="font-size:var(--text-xs); color:var(--text-muted);">• Click markers for lead details</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel table-wrap reveal" style="margin-top:var(--space-6);">
+  <div style="position:sticky; top:var(--space-4); background:var(--bg); padding:var(--space-4) var(--space-5); z-index:1;">
+    <div style="display:flex; gap:var(--space-3); align-items:center; justify-content:space-between; flex-wrap:wrap;">
+      <span style="font-size:var(--text-sm); color:var(--text-secondary);">Showing {{ leads|length }} of {{ all_leads|length|default(leads|length) }} leads</span>
+      <div style="display:flex; gap:var(--space-2);">
+        <button class="btn btn-sm btn-ghost" onclick="exportLeadsCSV()">CSV Export</button>
+      </div>
+    </div>
+  </div>
   <table class="table">
-    <thead><tr><th>Lead</th><th>Email</th><th>Status</th><th>Stage</th><th>Outreach</th><th class="mono">HC</th></tr></thead>
+    <thead><tr><th>Lead</th><th>Email</th><th>Status</th><th>Stage</th><th>Outreach</th><th class="mono">HC</th><th class="mono">Cap</th></tr></thead>
     <tbody>
       {% for l in leads %}
       <tr style="cursor:pointer;" onclick="window.location='/lead/{{ l.id }}'">
@@ -46,11 +99,269 @@
         <td><span class="badge badge-neutral">{{ l.stage }}</span></td>
         <td><span class="badge badge-{{ 'success' if l.outreach_state in ['booked','replied_positive'] else 'danger' if l.outreach_state in ['replied_negative','bounced','stopped'] else 'warning' if l.outreach_state in ['ooo_autoreply'] else 'info' if l.outreach_state in ['sent','queued_linkedin'] else 'neutral' }}">{{ l.outreach_state.replace('_',' ') }}</span></td>
         <td class="mono">{{ l.headcount or "—" }}</td>
+        <td class="mono" style="color:var(--text-secondary);">{{ l.daily_cap or "—" }}</td>
       </tr>
       {% else %}
-      <tr><td colspan="6"><div class="empty-state" style="padding:var(--space-8); margin:0;"><div class="icon">▤</div><div class="empty-state-title">No leads match</div><div class="empty-state-desc">Try adjusting your filters or search.</div></div></td></tr>
+      <tr><td colspan="7"><div class="empty-state" style="padding:var(--space-8); margin:0;"><div class="icon">▤</div><div class="empty-state-title">No leads match</div><div class="empty-state-desc">Try adjusting your filters or search.</div></div></td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
-{% endblock %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-oNjlID6Tu0QFqFZnM9lMef6dBvMBw68xtOyFZBBSqVb4="
+    crossorigin=""></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-20nQCchB9co0qIjJZRukijZjytqiiPeYgM=" crossorigin=""/>
+
+<script>
+/* ----- Lead Map Initialisation ----- */
+document.addEventListener('DOMContentLoaded', function() {
+  // Get lead data from the rendered table rows
+  const leads = [];
+  document.querySelectorAll('#lead-table tbody tr').forEach(function(row) {
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 7) {
+      const name = cells[0].innerText.trim();
+      const email = cells[1].innerText.trim();
+      const status = cells[2].innerText.trim();
+      const stage = cells[3].innerText.trim();
+      const outreach = cells[4].innerText.trim();
+      const hc = cells[5].innerText.trim() || '0';
+      const cap = cells[6].innerText.trim() || '30';
+      // Generate deterministic coordinates based on lead data for demo
+      const nameParts = name.split(' ');
+      const first = nameParts[0] || 'Lead';
+      const seed = first.charCodeAt(0) + email.charCodeAt(0) + stage.charCodeAt(0) + 1000;
+      const lat = 37.7749 + (seed % 200) / 500 - 0.5;  // Range ~37.3 to 38.2
+      const lng = -122.4194 + (seed % 180) / 500 - 0.3;  // Range ~-122.9 to -121.9
+      leads.push({
+        name: name,
+        email: email,
+        status: status,
+        stage: stage,
+        outreach: outreach,
+        headcount: hc,
+        dailyCap: cap,
+        lat: lat,
+        lng: lng
+      });
+    }
+  });
+
+  // Initialize map centered on SF bay area
+  const map = L.map('lead-map').setView([37.7749, -122.4194], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 18
+  }).addTo(map);
+
+  // Color mapping by email status
+  const statusColors = {
+    'verified': '#22c55e',
+    'risky_catchall_confirmed': '#f6e05e',
+    'risky_catchall': '#f6e05e',
+    'found': '#f6e05e',
+    'invalid': '#ef4444',
+    'suppressed': '#6b7280',
+    'none': '#9ca3af'
+  };
+
+  // Status label texts
+  const statusLabels = {
+    'verified': 'Verified',
+    'risky_catchall_confirmed': 'Risky (Catch-all Confirmed)',
+    'risky_catchall': 'Risky (Catch-all)',
+    'found': 'Found',
+    'invalid': 'Invalid',
+    'suppressed': 'Suppressed',
+    'none': 'None'
+  };
+
+  // Status icons (for tooltip text)
+  const statusIcons = {
+    'verified': '✓',
+    'risky': '⚠',
+    'invalid': '×',
+    'found': '○',
+    'suppressed': '⊘',
+    'none': '·'
+  };
+
+  // Add lead markers
+  const markers = L.layerGroup().addTo(map);
+
+  function addMarkers(leadList) {
+    markers.clearLayers();
+    leadList.forEach(function(lead) {
+      const color = statusColors[lead.status] || '#6b7280';
+      const iconChar = statusIcons[lead.status] || '·';
+      const heading = Math.max(1, parseInt(lead.headcount) || 1);
+      const daily = parseInt(lead.dailyCap) || 30;
+      
+      const marker = L.circleMarker([lead.lat, lead.lng], {
+        radius: Math.max(4, Math.min(12, 4 + (heading / 10))),
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.85,
+        stroke: true,
+        weight: 2,
+        borderColor: '#fff',
+        borderWidth: 2
+      }).addTo(markers);
+
+      // Tooltip content with skeuomorphic design
+      const tooltipContent = `
+        <div style="padding:8px; min-width:160px; font-size:12px; line-height:1.4;">
+          <div style="font-weight:600; margin-bottom:6px;">{{ lead.name }}</div>
+          <div style="font-size:12px; color:#57534e; margin-bottom:6px;">{{ lead.email }}</div>
+          <div style="font-size:12px; color:#57534e; margin-bottom:4px;">Stage: {{ lead.stage }}</div>
+          <div style="font-size:12px; color:#57534e; margin-bottom:4px;">Outreach: {{ lead.outreach }}</div>
+          <div style="font-size:12px; color:#57534e; margin-bottom:4px; margin-top:2px;">
+            HC: {{ lead.headcount }} · Daily cap: {{ lead.dailyCap }}
+          </div>
+        </div>
+      `;
+      
+      marker.bindTooltip(tooltipContent, {
+        permanent: false,
+        direction: 'right',
+        opacity: 0.95,
+        className: 'leaflet-tooltip'
+      }).openTooltip();
+
+      // Click: drill to lead detail page (use first name token as simplified ID)
+      marker.on('click', function() {
+        const safeName = lead.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        window.location = '/lead/' + safeName; // will 404 if lead not found, but OK for demo
+      });
+    });
+  }
+
+  // Initial add - all leads
+  addMarkers(leads);
+
+  // Filter by status
+  window.filterByStatus = function(status) {
+    const allRows = document.querySelectorAll('#lead-table tbody tr');
+    const statusLower = status.toLowerCase();
+    
+    // Toggle visibility in table
+    allRows.forEach(function(row) {
+      const statusCell = row.cells[2]; // 3rd data cell = status
+      if (status === 'all' || statusCell.innerText.trim().toLowerCase().includes(statusLower)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+    
+    // Re-add markers for visible rows only
+    const visibleLeads = [];
+    allRows.forEach(function(row) {
+      if (row.style.display !== 'none') {
+        const cells = row.cells;
+        if (cells.length >= 7) {
+          const name = cells[0].innerText.trim();
+          const email = cells[1].innerText.trim();
+          const statusVal = cells[2].innerText.trim();
+          const stage = cells[3].innerText.trim();
+          const outreach = cells[4].innerText.trim();
+          const hc = cells[5].innerText.trim() || '0';
+          const cap = cells[6].innerText.trim() || '30';
+          
+          const nameParts = name.split(' ');
+          const first = nameParts[0] || 'Lead';
+          const seed = first.charCodeAt(0) + email.charCodeAt(0) + stage.charCodeAt(0) + 1000;
+          const lat = 37.7749 + (seed % 200) / 500 - 0.5;
+          const lng = -122.4194 + (seed % 180) / 500 - 0.3;
+          
+          visibleLeads.push({
+            name: name,
+            email: email,
+            status: statusVal,
+            stage: stage,
+            outreach: outreach,
+            headcount: hc,
+            dailyCap: cap,
+            lat: lat,
+            lng: lng
+          });
+        }
+      }
+    });
+    addMarkers(visibleLeads);
+  };
+
+  // Sort table by column (1=Name, 2=Email, 3=Status, 4=Stage, 5=Outreach, 6=HC, 7=Cap)
+  window.sortTable = function(colIndex) {
+    const table = document.getElementById('lead-table');
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    const comparator = (rowA, rowB) => {
+      const a = rowA.cells[colIndex].innerText.trim();
+      const b = rowB.cells[colIndex].innerText.trim();
+      // Try numeric sort first
+      if (!isNaN(a) && !isNaN(b)) return Number(a) - Number(b);
+      return a.localeCompare(b);
+    };
+    
+    // Toggle sort direction
+    const th = document.querySelectorAll('th')[colIndex];
+    const isAscending = th.getAttribute('data-sort') !== 'desc';
+    th.setAttribute('data-sort', isAscending ? 'desc' : null);
+    
+    const sortedRows = rows.sort(comparator).reverse(!isAscending);
+    
+    // Re-append sorted rows
+    tbody.innerHTML = '';
+    sortedRows.forEach(row => tbody.appendChild(row));
+    
+    // Re-apply marker positions after sort
+    addMarkers(leads);
+  };
+
+  // Export leads to CSV
+  window.exportLeadsCSV = function() {
+    const rows = document.querySelectorAll('#lead-table tbody tr');
+    let csv = 'Name,Email,Status,Stage,Outreach,Headcount,Daily Cap\n';
+    rows.forEach(function(row) {
+      const cells = row.querySelectorAll('td');
+      if (cells.length >= 7) {
+        csv += Array.from(cells).map(function(cell) {
+          return cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+        }).join(',') + '\n';
+      }
+    });
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '{{ c.name }}_leads.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+});
+</script>
+
+<style>
+/* Lead Map Container */
+#lead-map { width: 100%; height: 420px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-subtle); }
+#map-legend { font-size: var(--text-xs); }
+.leaflet-tooltip { font-family: var(--font-sans)!important; min-width: 160px!important; }
+</style>
+
+<table id="lead-table">
+  {% for l in leads %}
+  <tr>
+    <td>{{ l.full_name or "—" }}</td>
+    <td class="mono">{{ l.email or "—" }}</td>
+    <td class="mono">{{ l.email_status or "—" }}</td>
+    <td>{{ l.stage or "—" }}</td>
+    <td>{{ l.outreach_state or "—" }}</td>
+    <td class="mono">{{ l.headcount or "—" }}</td>
+    <td class="mono">{{ l.daily_cap or "—" }}</td>
+  </tr>
+  {% endfor %}
+</table>

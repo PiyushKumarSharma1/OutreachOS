@@ -39,6 +39,7 @@
       if (hidden) return;
       hidden = true;
       loader.classList.add('hidden');
+      loader.style.cssText = 'opacity:0!important;visibility:hidden!important;pointer-events:none!important';
     }
     function loop() {
       if (performance.now() - start >= minTime) { hide(); return; }
@@ -47,6 +48,8 @@
     requestAnimationFrame(loop);
     setTimeout(hide, maxTime);
     window.addEventListener('load', hide);
+    // Also hide on DOMContentLoaded as backup
+    document.addEventListener('DOMContentLoaded', hide);
   }
 
   // ---- Reveal on Scroll (IntersectionObserver) ----

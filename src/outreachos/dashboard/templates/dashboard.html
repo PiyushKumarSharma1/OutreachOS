@@ -17,7 +17,7 @@
       {% for c in campaigns %}
       <a href="/campaign/{{ c.name }}" class="campaign-card" style="display:block; padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle); text-decoration:none; color:inherit; transition:background var(--dur-fast);">
         {% if loop.last %} style="border-bottom:none;" {% endif %}
-        <div style="display:grid; grid-template-columns: 1fr auto auto; gap:var(--space-4); align-items:center;">
+        <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:var(--space-4); align-items:center;">
           <div>
             <div class="campaign-name" style="font-weight:600; font-size:var(--text-base);">{{ c.name }}</div>
             <div style="font-size:var(--text-xs); color:var(--text-muted); font-family:var(--font-mono);">{{ c.id[:12] }} · {{ c.industries }}</div>
@@ -26,6 +26,7 @@
             <span><b>{{ c.stats.total_leads }}</b> leads</span>
             <span><b>{{ c.booked }}</b> booked</span>
             <span><b>{{ c.reply_rate_pct }}</b>% replies</span>
+            <span><b>{{ c.dispatch_pct }}</b>% dispatched</span>
           </div>
           <div style="width:100px; height:6px; background:var(--border-subtle); border-radius:var(--radius-pill); overflow:hidden;">
             <i style="display:block; height:100%; width:0; background:linear-gradient(90deg,var(--accent),#5a7cff); border-radius:var(--radius-pill); width:var(--w,{{ c.dispatch_pct }}%); transition:width 1s cubic-bezier(0.22,1,0.36,1) .3s;"></i>
@@ -50,5 +51,31 @@
       </div>
     </div>
   </aside>
+</div>
+
+<!-- Lead Map Section -->
+<div class="panel reveal" style="margin-top:var(--space-6);">
+  <div class="panel-header" style="padding:var(--space-4) var(--space-5);">
+    <h2 class="panel-title">Lead Map</h2>
+    <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; font-size:var(--text-xs); color:var(--text-secondary); margin-top:var(--space-3);">
+      <button class="btn btn-ghost" onclick="window.filterByStatus('all')">All</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('verified')">Verified</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('risky')">Risky</button>
+      <button class="btn btn-ghost" onclick="window.filterByStatus('invalid')">Invalid</button>
+    </div>
+  </div>
+  <div class="panel-body" style="padding:0; height:420px; position:relative;">
+    <div id="lead-map" style="width:100%; height:100%;"></div>
+    <div id="map-legend" style="position:absolute; bottom:var(--space-4); left:var(--space-4); background:var(--surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:var(--space-3); z-index:10; max-width:200px;">
+      <div style="font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:var(--space-2);">Status Legend</div>
+      <div style="display:flex; gap:var(--space-2); margin-bottom:var(--space-1);">
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--success); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Verified</span>
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--warning); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Risky</span>
+        <span style="display:flex; align-items:center; gap:var(--space-1);"><span style="width:12px; height:12px; border-radius:50%; background:var(--danger); border:1px solid var(--border-subtle); flex-shrink:0;"></span> Invalid</span>
+      </div>
+      <div style="font-size:var(--text-xs); color:var(--text-muted);">• Click markers for lead details</div>
+    </div>
+  </div>
+</div>
 </div>
 {% endblock %}

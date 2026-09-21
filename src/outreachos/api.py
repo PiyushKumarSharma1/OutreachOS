@@ -67,6 +67,9 @@ async def security_and_auth(request: Request, call_next):
         "img-src 'self' data:; font-src 'self'; "
         "connect-src 'self'; frame-ancestors 'none'"
     )
+    # Cache-busting for static assets
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 
 

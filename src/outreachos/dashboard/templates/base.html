@@ -4,9 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}OutreachOS{% endblock %}</title>
-<link rel="stylesheet" href="/static/app.css">
-<script src="/static/vendor/chart.umd.min.js" defer></script>
-<script src="/static/app.js" defer></script>
+<link rel="stylesheet" href="/static/app.css?v=20260824b">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-20nQCchB9co0qIjJZRukijZjytqiiPeYgM=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-oNjlID6Tu0QFqFZnM9lMef6dBvMBw68xtOyFZBBSqVb4="
+    crossorigin=""></script>
+<script src="/static/vendor/chart.umd.min.js?v=20260824" defer></script>
+<script src="/static/app.js?v=20260824" defer></script>
 </head>
 <body>
 <!-- Loading Screen -->
@@ -14,6 +19,32 @@
   <div class="loading-spinner" aria-hidden="true"></div>
   <div class="loading-text">Initializing agents…</div>
 </div>
+<script>
+  // Ultra-aggressive: hide loader as early as possible, element guaranteed parsed
+  (function() {
+    function hideLoader() {
+      var loader = document.getElementById('app-loading');
+      if (loader) {
+        loader.style.cssText = 'display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important';
+        loader.classList.add('hidden');
+      }
+    }
+    hideLoader();
+    setTimeout(hideLoader, 800);
+    setTimeout(hideLoader, 2000);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hideLoader);
+    }
+    window.addEventListener('load', hideLoader);
+  })();
+</script>
+<script>
+  // Immediate failsafe: hide loader within 2.5s even if JS fails
+  setTimeout(function() {
+    var loader = document.getElementById('app-loading');
+    if (loader) loader.style.cssText = 'opacity:0!important;visibility:hidden!important;pointer-events:none!important';
+  }, 2500);
+</script>
 
 <!-- Page Transition Overlay -->
 <div class="page-transition" aria-hidden="true"></div>

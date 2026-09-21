@@ -74,7 +74,7 @@ class InfraManager:
                 self.store.conn.execute("UPDATE inboxes SET status='active' WHERE id=?", (r["id"],))
                 self.store.conn.commit()
             if status == "active":
-                out.append({"email": r["email"], "warmup_days": days, "daily_cap": r["daily_cap"]})
+                out.append({"email": r["email"], "inbox": r["email"], "warmup_days": days, "daily_cap": r["daily_cap"]})
         self.store.conn.commit()
         return out
 

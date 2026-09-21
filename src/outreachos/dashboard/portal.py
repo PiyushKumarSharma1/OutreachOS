@@ -80,6 +80,36 @@ def portal_dashboard(request: Request):
                    campaigns=cards, totals=totals, meetings=meetings)
 
 
+@router.get("/portal/leads", response_class=HTMLResponse)
+def portal_leads(request: Request, stage: str = "", status: str = "",
+                 outreach: str = "", q: str = ""):
+    client = _client_from_request(request)
+    if not client:
+        return RedirectResponse("/portal", status_code=302)
+    engine = Engine(PoolStore(SETTINGS.db_path))
+    campaigns = engine.campaigns_for_client(client["id"])
+    all_leads = []
+    for c in campaigns:
+        all_leads.extend(engine.store.leads(c.id))
+    
+    if stage:
+        all_leads = [l for l in all_leads if l.stage == stage]
+    if status:
+        all_leads = [l for l in all_leads if l.email_status == status]
+    if outreach:
+        all_leads = [l for l in all_leads if l.outreach_state == outreach]
+    if q:
+        ql = q.lower()
+        all_leads = [l for l in all_leads if ql in (l.full_name + " " + l.company + " " + l.email + " " + l.title).lower()]
+    
+    all_leads.sort(key=lambda l: l.updated_at, reverse=True)
+    
+    from ..pool.models import STAGES, EMAIL_STATUSES, OUTREACH_STATES
+    return _render(request, "portal_leads.html", client=client, leads=all_leads[:500],
+                   stages=STAGES, statuses=EMAIL_STATUSES, states=OUTREACH_STATES,
+                   f_stage=stage, f_status=status, f_outreach=outreach, q=q)
+
+
 @router.get("/approvals", response_class=HTMLResponse)
 def approvals_page(request: Request):
     engine = Engine(PoolStore(SETTINGS.db_path))

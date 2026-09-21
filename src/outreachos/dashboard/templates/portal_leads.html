@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }} · Leads — OutreachOS Portal{% endblock %}
+{% block pagetitle %}{{ client.name }} — All Leads{% endblock %}
+{% block topbar_right %}
+<a href="/portal/logout" class="btn btn-ghost">Sign out</a>
+{% endblock %}
+{% block content %}
+<div class="panel reveal">
+  <div class="panel-header">
+    <h2 class="panel-title">Leads ({{ leads|length }})</h2>
+    <div class="panel-actions">
+      <form style="display:flex; gap:var(--space-2);">
+        <select name="stage" class="select" style="width:auto;">
+          <option value="">All Stages</option>
+          {% for s in stages %}<option value="{{ s }}" {% if f_stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+        <select name="status" class="select" style="width:auto;">
+          <option value="">All Email Status</option>
+          {% for s in statuses %}<option value="{{ s }}" {% if f_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+        <select name="outreach" class="select" style="width:auto;">
+          <option value="">All Outreach</option>
+          {% for s in states %}<option value="{{ s }}" {% if f_outreach == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+        <input type="text" name="q" placeholder="Search name, company, email..." class="input" value="{{ q or '' }}" style="width:240px;">
+        <button class="btn btn-primary">Filter</button>
+        <a href="/portal/leads" class="btn btn-secondary">Clear</a>
+      </form>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Name</th><th>Title</th><th>Company</th><th>Email</th><th>Stage</th><th>Email Status</th><th>Outreach</th><th>Intent</th><th>LinkedIn</th></tr>
+      </thead>
+      <tbody>
+        {% for l in leads %}
+        <tr>
+          <td style="font-weight:500;">{{ l.full_name }}</td>
+          <td>{{ l.title or '—' }}</td>
+          <td>{{ l.company or '—' }}</td>
+          <td class="mono">{{ l.email or '—' }}</td>
+          <td><span class="badge">{{ l.stage }}</span></td>
+          <td><span class="badge {% if l.email_status == 'verified' %}badge-success{% elif l.email_status in ('invalid','suppressed') %}badge-danger{% elif l.email_status == 'risky_catchall' %}badge-warning{% else %}{% endif %}">{{ l.email_status }}</span></td>
+          <td><span class="badge">{% if l.outreach_state == 'sent' %}sent{% elif l.outreach_state == 'booked' %}booked{% elif l.outreach_state == 'replied_positive' %}replied +{% elif l.outreach_state == 'replied_negative' %}replied -{% else %}{{ l.outreach_state }}{% endif %}</span></td>
+          <td class="mono">{{ l.enrichment.get('intent_score', 0) }}</td>
+          <td>{% if l.linkedin_url %}<a href="{{ l.linkedin_url }}" target="_blank" class="btn btn-ghost btn-sm">Profile</a>{% else %}—{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9"><div class="empty-state"><div class="icon">◈</div><div class="empty-state-desc">No leads match your filters.</div></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

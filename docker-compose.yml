@@ -1,16 +1,78 @@
 services:
   outreachos:
     build: .
-    command: python -m outreachos.api
+    command: uvicorn outreachos.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     environment:
       OUTREACHOS_DB: /data/outreachos.db
-      PROVIDER_MODE: mock
-      LLM_MODE: mock
+      PROVIDER_MODE: ${PROVIDER_MODE:-mock}
+      LLM_MODE: ${LLM_MODE:-mock}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      APOLLO_API_KEY: ${APOLLO_API_KEY:-}
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      DROPCONTACT_API_KEY: ${DROPCONTACT_API_KEY:-}
+      ZEROBOUNCE_API_KEY: ${ZEROBOUNCE_API_KEY:-}
+      NEVERBOUNCE_API_KEY: ${NEVERBOUNCE_API_KEY:-}
+      SCRUBBY_API_KEY: ${SCRUBBY_API_KEY:-}
+      CLEARBIT_API_KEY: ${CLEARBIT_API_KEY:-}
+      PDL_API_KEY: ${PDL_API_KEY:-}
+      SMARTLEAD_API_KEY: ${SMARTLEAD_API_KEY:-}
+      INSTANTLY_API_KEY: ${INSTANTLY_API_KEY:-}
+      HUBSPOT_API_KEY: ${HUBSPOT_API_KEY:-}
+      OUTREACHOS_UNSUB_SECRET: ${OUTREACHOS_UNSUB_SECRET:-change-this-in-production}
+      OUTREACHOS_LEGAL_NAME: ${OUTREACHOS_LEGAL_NAME:-OutreachOS}
+      OUTREACHOS_ADDRESS: ${OUTREACHOS_ADDRESS:-123 Market St, San Francisco, CA}
+      OUTREACHOS_BASE_URL: ${OUTREACHOS_BASE_URL:-http://localhost:8000}
+      OUTREACHOS_MCP_KEY: ${OUTREACHOS_MCP_KEY:-}
+      DAILY_SEND_CAP_PER_INBOX: ${DAILY_SEND_CAP_PER_INBOX:-30}
+      WARMUP_MIN_DAYS: ${WARMUP_MIN_DAYS:-21}
+      MAX_BOUNCE_RATE: ${MAX_BOUNCE_RATE:-0.02}
     volumes:
       - outreachos-data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Run the autonomous scheduler
+  scheduler:
+    build: .
+    command: python -m outreachos.cli scheduler --forever --auto-hunt --interval 24 --jitter 30
+    environment:
+      OUTREACHOS_DB: /data/outreachos.db
+      PROVIDER_MODE: ${PROVIDER_MODE:-mock}
+      LLM_MODE: ${LLM_MODE:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      APOLLO_API_KEY: ${APOLLO_API_KEY:-}
+      HUNTER_API_KEY: ${HUNTER_API_KEY:-}
+      ZEROBOUNCE_API_KEY: ${ZEROBOUNCE_API_KEY:-}
+      NEVERBOUNCE_API_KEY: ${NEVERBOUNCE_API_KEY:-}
+      SCRUBBY_API_KEY: ${SCRUBBY_API_KEY:-}
+      SMARTLEAD_API_KEY: ${SMARTLEAD_API_KEY:-}
+      INSTANTLY_API_KEY: ${INSTANTLY_API_KEY:-}
+      DAILY_SEND_CAP_PER_INBOX: ${DAILY_SEND_CAP_PER_INBOX:-30}
+      WARMUP_MIN_DAYS: ${WARMUP_MIN_DAYS:-21}
+      MAX_BOUNCE_RATE: ${MAX_BOUNCE_RATE:-0.02}
+    volumes:
+      - outreachos-data:/data
+    restart: unless-stopped
+    depends_on:
+      - outreachos
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Optional: MCP Server (stdio, for Claude Code integration)
+  # Run separately: docker run -i --rm -v outreachos-data:/data outreachos python -m outreachos.mcp_server
 
 volumes:
   outreachos-data:
